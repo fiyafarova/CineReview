@@ -4,6 +4,8 @@ write reviews, leave comments, and manage their watchlist.
 
 ## Group members:
 Safarova Sofiya 
+
 Sauytbay Togzhan
+
 Bassarbek Shynggyskhan
 
