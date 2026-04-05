@@ -1,0 +1,43 @@
+<section class="product-detail-page">
+  @if (product) {
+    <div class="product-detail-container">
+      <div class="product-image-section">
+        <img [src]="product.image" [alt]="product.name" class="product-image">
+      </div>
+
+      <div class="product-info-section">
+        <div class="product-header">
+          <h1>{{ product.name }}</h1>
+          <p class="category">{{ product.category.name }}</p>
+        </div>
+
+        <div class="product-description">
+          <p>{{ product.description }}</p>
+        </div>
+
+        <div class="product-price">
+          <p class="price">${{ product.price }}</p>
+          <p class="stock" [class.out-of-stock]="!product.inStock">
+            {{ product.inStock ? 'In Stock' : 'Out of Stock' }}
+          </p>
+        </div>
+
+        <div class="product-actions">
+          <button class="add-to-cart-btn" (click)="addToCart()" [disabled]="!product.inStock">
+            Add to Cart
+          </button>
+          <button class="back-btn" (click)="goBack()">Back to Products</button>
+        </div>
+      </div>
+    </div>
+  } @else if (errorMessage) {
+    <div class="error-message">
+      <p>{{ errorMessage }}</p>
+      <button class="back-btn" (click)="goBack()">Back to Products</button>
+    </div>
+  } @else {
+    <div class="loading">
+      <p>Loading product details...</p>
+    </div>
+  }
+</section>
