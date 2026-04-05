@@ -1,0 +1,42 @@
+<section class="orders-page">
+  <div class="orders-header">
+    <h1>My Orders</h1>
+    <p>Your order history</p>
+  </div>
+
+  @if (orders().length === 0) {
+    <div class="empty-orders"><!-- Если заказов нет, показываем сообщение -->
+      <p>No orders yet</p>
+    </div>
+  } @else {
+    <div class="orders-list">
+      @for (order of orders(); track order.id) { <!-- Выводим информацию о каждом заказе -->
+        <article class="order-card">
+          <div class="order-card__top">
+            <h3>Order #{{ order.id }}</h3>
+            <span class="order-date">{{ order.createdAt | date:'dd MMM yyyy, HH:mm' }}</span>
+          </div>
+
+          <div class="order-meta">
+            <p><strong>Name:</strong> {{ order.customerName }}</p>
+            <p><strong>Address:</strong> {{ order.customerAddress }}</p>
+            <p><strong>Phone:</strong> {{ order.customerPhone }}</p>
+            <p><strong>Items count:</strong> {{ getItemsCount(order) }}</p>
+            <p><strong>Total:</strong> {{ order.total }}</p>
+          </div>
+
+          <div class="order-products">
+            <h4>Products</h4>
+
+            @for (item of order.items; track item.id) {<!-- Выводим товары внутри текущего заказа -->
+              <div class="product-row">
+                <span>{{ item.name }}</span>
+                <span>{{ item.qty }} x {{ item.price }}</span>
+              </div>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
+</section>
