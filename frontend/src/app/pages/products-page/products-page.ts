@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProductService } from '../../service/product.service';
-import { CartService } from '../../service/cart.service';
 import { Product, Category } from '../../models/product';
 
 @Component({
@@ -23,7 +22,6 @@ export class ProductsPage implements OnInit {
 
   constructor(
     private productService: ProductService,
-    private cartService: CartService,
     private router: Router
   ) {}
 
@@ -92,18 +90,5 @@ export class ProductsPage implements OnInit {
 
   viewProduct(productId: number): void {
     this.router.navigate(['/products', productId]);
-  }
-
-  addToCart(product: Product): void {
-    if (product.inStock) {
-      this.cartService.add({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        qty: 1
-      });
-      // Optional: Show success message or notification
-      alert(`${product.name} added to cart!`);
-    }
   }
 }
