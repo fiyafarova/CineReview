@@ -1,15 +1,17 @@
-import json
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
 
 from .models import Order
 
 
-@csrf_exempt
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])  # JWT токен
 def orders_list(request):
+
     if request.method == 'GET':
-        orders = Order.objects.all().order_by('-createdAt')
+        orders = Order.objects.filter(user=request.user).order_by('-createdAt')
         data = [
             {
                 'id': order.id,
@@ -22,12 +24,13 @@ def orders_list(request):
             }
             for order in orders
         ]
-        return JsonResponse(data, safe=False)
+        return Response(data)
 
     if request.method == 'POST':
-        body = json.loads(request.body)
+        body = request.data
 
         order = Order.objects.create(
+            user=request.user,
             customerName=body['customerName'],
             customerAddress=body['customerAddress'],
             customerPhone=body['customerPhone'],
@@ -35,15 +38,15 @@ def orders_list(request):
             total=body['total'],
         )
 
-        data = {
-            'id': order.id,
-            'customerName': order.customerName,
-            'customerAddress': order.customerAddress,
-            'customerPhone': order.customerPhone,
-            'items': order.items,
-            'total': float(order.total),
-            'createdAt': order.createdAt.isoformat(),
-        }
-        return JsonResponse(data, status=201)
-
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
+        return Response(
+            {
+                'id': order.id,
+                'customerName': order.customerName,
+                'customerAddress': order.customerAddress,
+                'customerPhone': order.customerPhone,
+                'items': order.items,
+                'total': float(order.total),
+                'createdAt': order.createdAt.isoformat(),
+            },
+            status=status.HTTP_201_CREATED
+        )

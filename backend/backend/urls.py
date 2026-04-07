@@ -19,5 +19,13 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/orders/', include('orders.urls')),
+
+    # Sofiua - Auth
+    path('api/auth/', include('users.urls')),
+
+    # Togzhan - Products
+    # path('api/', include('products.urls')),
+
+    # Shynggyskhan - Orders
+    path('api/', include('orders.urls')),
 ]
