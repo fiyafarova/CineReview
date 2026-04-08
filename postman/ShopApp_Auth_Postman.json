@@ -22,7 +22,7 @@
   ],
   "item": [
     {
-      "name": "1. Регистрация",
+      "name": "1. Register",
       "request": {
         "method": "POST",
         "header": [
@@ -37,7 +37,7 @@
           "host": ["{{base_url}}"],
           "path": ["api", "auth", "register", ""]
         },
-        "description": "Создаёт нового пользователя. Возвращает JWT токен и данные пользователя."
+        "description": "Creates a new user. Returns JWT tokens and user data."
       },
       "event": [
         {
@@ -48,7 +48,7 @@
               "if (json.token) {",
               "    pm.collectionVariables.set('access_token', json.token);",
               "    pm.collectionVariables.set('refresh_token', json.refresh);",
-              "    console.log('Токены сохранены автоматически');",
+              "    console.log('Tokens saved automatically');",
               "}"
             ]
           }
@@ -56,23 +56,23 @@
       ],
       "response": [
         {
-          "name": "201 Created — успешная регистрация",
+          "name": "201 Created — successful registration",
           "status": "Created",
           "code": 201,
           "header": [{ "key": "Content-Type", "value": "application/json" }],
           "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Sofia\",\n    \"email\": \"sofia@mail.com\"\n  }\n}"
         },
         {
-          "name": "400 Bad Request — email уже занят",
+          "name": "400 Bad Request — email already taken",
           "status": "Bad Request",
           "code": 400,
           "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"message\": {\n    \"email\": [\"Пользователь с таким email уже существует.\"]\n  }\n}"
+          "body": "{\n  \"message\": {\n    \"email\": [\"A user with this email already exists.\"]\n  }\n}"
         }
       ]
     },
     {
-      "name": "2. Логин",
+      "name": "2. Login",
       "request": {
         "method": "POST",
         "header": [
@@ -87,7 +87,7 @@
           "host": ["{{base_url}}"],
           "path": ["api", "auth", "login", ""]
         },
-        "description": "Авторизует пользователя по email и паролю. Возвращает JWT токен."
+        "description": "Authenticates a user by email and password. Returns a JWT token."
       },
       "event": [
         {
@@ -98,7 +98,7 @@
               "if (json.token) {",
               "    pm.collectionVariables.set('access_token', json.token);",
               "    pm.collectionVariables.set('refresh_token', json.refresh);",
-              "    console.log('Токены сохранены автоматически');",
+              "    console.log('Tokens saved automatically');",
               "}"
             ]
           }
@@ -106,23 +106,23 @@
       ],
       "response": [
         {
-          "name": "200 OK — успешный логин",
+          "name": "200 OK — successful login",
           "status": "OK",
           "code": 200,
           "header": [{ "key": "Content-Type", "value": "application/json" }],
           "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Sofia\",\n    \"email\": \"sofia@mail.com\"\n  }\n}"
         },
         {
-          "name": "400 Bad Request — неверный пароль",
+          "name": "400 Bad Request — wrong password",
           "status": "Bad Request",
           "code": 400,
           "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"message\": {\n    \"non_field_errors\": [\"Неверный email или пароль.\"]\n  }\n}"
+          "body": "{\n  \"message\": {\n    \"non_field_errors\": [\"Invalid email or password.\"]\n  }\n}"
         }
       ]
     },
     {
-      "name": "3. Логаут",
+      "name": "3. Logout",
       "request": {
         "method": "POST",
         "header": [
@@ -138,18 +138,18 @@
           "host": ["{{base_url}}"],
           "path": ["api", "auth", "logout", ""]
         },
-        "description": "Инвалидирует refresh токен. Требует Authorization: Bearer <access_token>."
+        "description": "Invalidates the refresh token. Requires Authorization: Bearer <access_token>."
       },
       "response": [
         {
-          "name": "200 OK — успешный выход",
+          "name": "200 OK — successful logout",
           "status": "OK",
           "code": 200,
           "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"message\": \"Выход выполнен успешно.\"\n}"
+          "body": "{\n  \"message\": \"Logged out successfully.\"\n}"
         },
         {
-          "name": "401 Unauthorized — нет токена",
+          "name": "401 Unauthorized — no token provided",
           "status": "Unauthorized",
           "code": 401,
           "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -158,7 +158,7 @@
       ]
     },
     {
-      "name": "4. Текущий пользователь (GET /me/)",
+      "name": "4. Current User (GET /me/)",
       "request": {
         "method": "GET",
         "header": [
@@ -169,7 +169,7 @@
           "host": ["{{base_url}}"],
           "path": ["api", "auth", "me", ""]
         },
-        "description": "Возвращает данные текущего авторизованного пользователя. Требует токен."
+        "description": "Returns the data of the currently authenticated user. Requires a valid token."
       },
       "response": [
         {
