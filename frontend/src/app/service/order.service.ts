@@ -1,7 +1,8 @@
-import {Order} from '../models/order';
-import {HttpClient} from '@angular/common/http';
-import {inject, Injectable} from '@angular/core';
-import {Observable} from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { CartItem } from '../models/cart-item';
+import { CheckoutSummary, Order } from '../models/order';
 
 @Injectable({
   providedIn: 'root',
@@ -9,17 +10,31 @@ import {Observable} from 'rxjs';
 export class OrderService {
   private http = inject(HttpClient);
 
-  private apiUrl = 'http://127.0.0.1:8000/api/orders/' // backend URL, потом просто заменим эту строку
-  // Отправляет новый заказ на backend
-  placeOrder(order: Order): Observable<Order>{
+  // Базовый URL для работы с заказами.
+  // Все запросы по orders идут отсюда.
+  private apiUrl = 'http://localhost:8000/api/orders/';
+
+  // Создание нового заказа.
+  // Пока отправляем старый формат, без сложной checkout-логики.
+  placeOrder(order: Order): Observable<Order> {
     return this.http.post<Order>(this.apiUrl, order);
   }
-  // Получает список заказов
-  getMyOrders(): Observable<Order[]>{
+
+  // Получение заказов текущего пользователя.
+  getMyOrders(): Observable<Order[]> {
     return this.http.get<Order[]>(this.apiUrl);
   }
+
+  // Предпросмотр checkout.
+  // Этот endpoint должен считать скидку, итоговую сумму и бонусы на backend.
+  // Пока frontend уже умеет его вызывать, а backend мы подключим следующим этапом.
+  previewCheckout(payload: { items: CartItem[]; promoCode?: string }): Observable<CheckoutSummary> {
+    return this.http.post<CheckoutSummary>(`${this.apiUrl}checkout-preview/`, payload);
+  }
+
+  // Отмена заказа по id.
+  // По ТЗ backend должен разрешать отмену только если статус = new.
+  cancelOrder(id: number): Observable<Order> {
+    return this.http.post<Order>(`${this.apiUrl}${id}/cancel/`, {});
+  }
 }
-// HttpClient отправляет HTTP-запросы
-// placeOrder() делает POST
-// getMyOrders() делает GET
-// Observable это результат HTTP-запроса в Angular, его потом будем обрабатывать через subscribe()

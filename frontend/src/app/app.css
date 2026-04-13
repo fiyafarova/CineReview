@@ -12,6 +12,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 24px;
 }
 
 .navbar-brand {
@@ -19,6 +20,13 @@
   font-size: 24px;
   font-weight: 700;
   color: #ffffff;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 .navbar-links {
@@ -41,4 +49,56 @@
 .navbar-links li a:hover,
 .navbar-links li a.active {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.navbar-user__name {
+  font-weight: 700;
+}
+
+.navbar-user__bonus {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(251, 191, 36, 0.18);
+  color: #fcd34d;
+  font-weight: 700;
+}
+
+.btn-logout-nav {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: #ef4444;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.btn-logout-nav:hover {
+  transform: translateY(-1px);
+  opacity: 0.92;
+}
+
+@media (max-width: 760px) {
+  .navbar-container {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .navbar-actions,
+  .navbar-links,
+  .navbar-user {
+    width: 100%;
+  }
+
+  .navbar-links {
+    flex-wrap: wrap;
+  }
 }

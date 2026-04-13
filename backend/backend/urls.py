@@ -27,5 +27,5 @@ urlpatterns = [
     # path('api/', include('products.urls')),
 
     # Shynggyskhan - Orders
-    path('api/', include('orders.urls')),
+    path('api/orders/', include('orders.urls')),
 ]

@@ -1,52 +1,98 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from decimal import Decimal
+
+from rest_framework import mixins, permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework import status
 
-from .models import Order
+from users.models import UserProfile
+
+from .models import Order, OrderStatus
+from .serializers import (
+    CheckoutPreviewSerializer,
+    CheckoutSummarySerializer,
+    OrderSerializer,
+    OrderSummarySerializer,
+)
 
 
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])  # JWT токен
-def orders_list(request):
+class OrderViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet,
+):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    if request.method == 'GET':
-        orders = Order.objects.filter(user=request.user).order_by('-createdAt')
-        data = [
-            {
-                'id': order.id,
-                'customerName': order.customerName,
-                'customerAddress': order.customerAddress,
-                'customerPhone': order.customerPhone,
-                'items': order.items,
-                'total': float(order.total),
-                'createdAt': order.createdAt.isoformat(),
-            }
-            for order in orders
-        ]
-        return Response(data)
+    def get_queryset(self):
+        # Каждый пользователь видит только свои заказы.
+        return Order.objects.filter(user=self.request.user).order_by('-createdAt')
 
-    if request.method == 'POST':
-        body = request.data
+    def perform_create(self, serializer):
+        # user не берём с клиента.
+        # Привязываем заказ к авторизованному пользователю из JWT.
+        serializer.save(user=self.request.user)
 
-        order = Order.objects.create(
-            user=request.user,
-            customerName=body['customerName'],
-            customerAddress=body['customerAddress'],
-            customerPhone=body['customerPhone'],
-            items=body['items'],
-            total=body['total'],
-        )
+    @action(detail=False, methods=['post'], url_path='checkout-preview')
+    def checkout_preview(self, request):
+        """
+        Preview checkout нужен, чтобы frontend мог до оформления заказа показать:
+        - subtotal
+        - скидку
+        - итоговую сумму
+        - начисленные бонусы
+        """
+        input_serializer = CheckoutPreviewSerializer(data=request.data)
+        input_serializer.is_valid(raise_exception=True)
 
-        return Response(
-            {
-                'id': order.id,
-                'customerName': order.customerName,
-                'customerAddress': order.customerAddress,
-                'customerPhone': order.customerPhone,
-                'items': order.items,
-                'total': float(order.total),
-                'createdAt': order.createdAt.isoformat(),
-            },
-            status=status.HTTP_201_CREATED
-        )
+        summary = input_serializer.get_summary()
+        output_serializer = CheckoutSummarySerializer(summary)
+
+        return Response(output_serializer.data)
+
+    @action(detail=True, methods=['post'], url_path='cancel')
+    def cancel(self, request, pk=None):
+        """
+        Отмена разрешена только для заказа в статусе new.
+        Если за заказ уже были начислены бонусы, откатываем их назад.
+        """
+        order = self.get_object()
+
+        if order.status != OrderStatus.NEW:
+            return Response(
+                {'message': 'Only orders with status "new" can be cancelled.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if order.bonusAwarded and order.earnedBonus > 0:
+            profile, _ = UserProfile.objects.get_or_create(user=order.user)
+
+            # Не даём балансу уйти в минус при откате.
+            profile.bonusBalance = max(
+                Decimal('0.00'),
+                (profile.bonusBalance - order.earnedBonus).quantize(Decimal('0.01')),
+            )
+            profile.save(update_fields=['bonusBalance'])
+
+            order.bonusAwarded = False
+
+        order.status = OrderStatus.CANCELLED
+        order.save(update_fields=['status', 'bonusAwarded'])
+
+        return Response(self.get_serializer(order).data)
+
+    @action(detail=False, methods=['get'], url_path='summary')
+    def summary(self, request):
+        """
+        Короткая сводка по заказам пользователя.
+        При желании cancelled можно исключать из totalSpent,
+        чтобы отменённые заказы не считались как реальные траты.
+        """
+        queryset = self.get_queryset().exclude(status=OrderStatus.CANCELLED)
+
+        total_spent = sum((order.total for order in queryset), Decimal('0.00'))
+
+        serializer = OrderSummarySerializer({
+            'ordersCount': queryset.count(),
+            'totalSpent': float(total_spent),
+        })
+        return Response(serializer.data)

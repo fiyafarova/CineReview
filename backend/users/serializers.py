@@ -1,11 +1,15 @@
-from rest_framework import serializers
-from django.contrib.auth.models import User
+from decimal import Decimal
+
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
+from rest_framework import serializers
+
+from .models import UserProfile
 
 
 class RegisterSerializer(serializers.Serializer):
-    name     = serializers.CharField(max_length=150)
-    email    = serializers.EmailField()
+    name = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
     password = serializers.CharField(min_length=6, write_only=True)
 
     def validate_email(self, value):
@@ -19,21 +23,27 @@ class RegisterSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
+        # Создаём базового пользователя.
         user = User.objects.create_user(
             username=validated_data['name'],
             email=validated_data['email'],
             password=validated_data['password'],
             first_name=validated_data['name'],
         )
+
+        # Сразу создаём профиль, чтобы в дальнейшем код мог безопасно
+        # читать bonusBalance без дополнительных проверок на этапе регистрации.
+        UserProfile.objects.get_or_create(user=user)
+
         return user
 
 
 class LoginSerializer(serializers.Serializer):
-    email    = serializers.EmailField()
+    email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        email    = data.get('email')
+        email = data.get('email')
         password = data.get('password')
 
         try:
@@ -53,6 +63,17 @@ class LoginSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.Serializer):
-    id    = serializers.IntegerField()
-    name  = serializers.CharField(source='first_name')
+    id = serializers.IntegerField()
+    name = serializers.CharField(source='first_name')
     email = serializers.EmailField()
+
+    # Возвращаем бонусный баланс в ответах auth/me.
+    bonusBalance = serializers.SerializerMethodField()
+
+    def get_bonusBalance(self, user):
+        # Старые пользователи могли появиться раньше, чем UserProfile.
+        # Поэтому не падаем, а безопасно возвращаем 0.
+        profile = getattr(user, 'profile', None)
+        if not profile:
+            return float(Decimal('0.00'))
+        return float(profile.bonusBalance)
