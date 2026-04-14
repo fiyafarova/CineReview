@@ -1,0 +1,98 @@
+.small-container {
+  max-width: 600px;
+}
+
+.profile-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 30px;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.label {
+  width: 140px;
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.value {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.input-wrapper {
+  flex: 1;
+}
+
+.modern-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-main);
+  transition: all 0.2s;
+}
+
+.modern-input:focus {
+  border-color: var(--primary);
+  outline: none;
+  background: white;
+}
+
+.bonus-highlight {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  padding: 24px;
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.bonus-label {
+  font-weight: 600;
+  color: #166534;
+}
+
+.bonus-amount {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--success);
+}
+
+.profile-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-success {
+  background: var(--success);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: #f1f5f9;
+  color: #64748b;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}

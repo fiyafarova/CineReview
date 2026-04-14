@@ -1,11 +1,12 @@
 @if (!hideNavbar) {
   <nav class="navbar">
     <div class="navbar-container">
-      <h1 class="navbar-brand">ShopEasy</h1>
+      <h1 class="navbar-brand" routerLink="/">ShopEasy</h1>
 
       <div class="navbar-actions">
         <ul class="navbar-links">
           <li><a routerLink="/products" routerLinkActive="active">Products</a></li>
+          <li><a routerLink="/wishlist" routerLinkActive="active">Wishlist</a></li>
           <li><a routerLink="/cart" routerLinkActive="active">Cart</a></li>
           <li><a routerLink="/orders" routerLinkActive="active">Orders</a></li>
         </ul>
@@ -13,7 +14,9 @@
         @if (authService.isLoggedIn() && currentUser) {
           <!-- Показываем, кто залогинен, и сколько у него бонусов -->
           <div class="navbar-user">
-            <span class="navbar-user__name">{{ currentUser.name }}</span>
+            <a routerLink="/profile" class="navbar-user__link" routerLinkActive="active-user">
+              <span class="navbar-user__name">Profile</span>
+            </a>
             <span class="navbar-user__bonus">Bonus: {{ currentUser.bonusBalance }}</span>
             <button class="btn-logout-nav" (click)="onLogout()">Log out</button>
           </div>

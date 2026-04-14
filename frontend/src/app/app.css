@@ -60,6 +60,23 @@
 
 .navbar-user__name {
   font-weight: 700;
+  color: gray;
+}
+
+
+.navbar-user__name:hover {
+  font-weight: 700;
+  color: white;
+}
+
+.navbar-user__link:hover {
+  color: var(--primary);
+  opacity: 0.8;
+}
+
+.navbar-user__link:active {
+  transform: translateY(1px);
+  color: #3b358a;
 }
 
 .navbar-user__bonus {

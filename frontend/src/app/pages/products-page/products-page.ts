@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ProductService } from '../../service/product.service';
 import { CartService } from '../../service/cart.service';
 import { Product, Category } from '../../models/product';
+import { WishlistService } from '../../service/wishlist.service';
 
 @Component({
   selector: 'app-products-page',
@@ -24,6 +25,7 @@ export class ProductsPage implements OnInit {
   constructor(
     private productService: ProductService,
     private cartService: CartService,
+    private wishlistService: WishlistService,
     private router: Router
   ) {}
 
@@ -105,5 +107,21 @@ export class ProductsPage implements OnInit {
       // Optional: Show success message or notification
       alert(`${product.name} added to cart!`);
     }
+  }
+
+  addToWishlist(productId: number): void {
+    this.wishlistService.addToWishlist(productId).subscribe({
+      next: () => {
+        alert('Product added to wishlist!!️');
+      },
+      error: (err) => {
+        if (err.status === 400) {
+          alert('This product is already in your wishlist');
+        } else {
+          alert('Please login to add products to wishlist');
+          console.error(err);
+        }
+      }
+    });
   }
 }

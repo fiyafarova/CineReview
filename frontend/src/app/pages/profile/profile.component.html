@@ -1,0 +1,75 @@
+<section class="container-custom small-container">
+  <div class="page-header">
+    <h1>My profile</h1>
+    <p>Manage your data and track your bonuses</p>
+  </div>
+
+  @if (successMessage) {
+    <div class="alert alert-success">{{ successMessage }}</div>
+  }
+
+  @if (profile) {
+    <div class="modern-card profile-card">
+      <div class="profile-rows">
+        <div class="info-row">
+          <span class="label">Username:</span>
+          <span class="value">{{ profile.username }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="label">Email:</span>
+          <span class="value">{{ profile.email }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="label">Phone:</span>
+          <div class="input-wrapper">
+            @if (editMode) {
+              <input [(ngModel)]="profile.phone" class="modern-input" placeholder="Enter phone number" />
+            } @else {
+              <span class="value">{{ profile.phone || '—' }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="info-row">
+          <span class="label">City:</span>
+          <div class="input-wrapper">
+            @if (editMode) {
+              <input [(ngModel)]="profile.city" class="modern-input" placeholder="Your city" />
+            } @else {
+              <span class="value">{{ profile.city || '—' }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="info-row">
+          <span class="label">Address:</span>
+          <div class="input-wrapper">
+            @if (editMode) {
+              <input [(ngModel)]="profile.address" class="modern-input" placeholder="Street, house, apartment" />
+            } @else {
+              <span class="value">{{ profile.address || '—' }}</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="bonus-highlight">
+        <div class="bonus-label">Bonus balance:</div>
+        <div class="bonus-amount">{{ profile.bonus_balance | number:'1.0-0' }} $</div>
+      </div>
+
+      <div class="profile-actions">
+        @if (!editMode) {
+          <button (click)="editMode = true" class="btn-primary">Edit</button>
+        } @else {
+          <button (click)="saveProfile()" class="btn-success">Save</button>
+          <button (click)="editMode = false" class="btn-secondary">Cancel</button>
+        }
+      </div>
+    </div>
+  } @else {
+    <div class="loading-state">Loading profile...</div>
+  }
+</section>
