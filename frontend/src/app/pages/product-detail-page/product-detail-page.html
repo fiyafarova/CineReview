@@ -1,43 +1,33 @@
-<section class="product-detail-page">
+<section class="container-custom">
+  <button class="btn-back" (click)="goBack()">← Back to shopping</button>
+
   @if (product) {
-    <div class="product-detail-container">
-      <div class="product-image-section">
-        <img [src]="product.image" [alt]="product.name" class="product-image">
+    <div class="product-detail-grid">
+      <div class="detail-image-box modern-card">
+        <img [src]="product.image" [alt]="product.name">
       </div>
 
-      <div class="product-info-section">
-        <div class="product-header">
-          <h1>{{ product.name }}</h1>
-          <p class="category">{{ product.category.name }}</p>
+      <div class="detail-info-box">
+        <span class="category-label">{{ product.category.name }}</span>
+        <h1>{{ product.name }}</h1>
+
+        <div class="price-tag">{{ product.price | number:'1.0-0' }} $</div>
+
+        <div class="status-indicator" [class.out-of-stock]="!product.inStock">
+          {{ product.inStock ? 'In stock' : 'Sold out' }}
         </div>
 
-        <div class="product-description">
+        <div class="description-block">
+          <h3>Description</h3>
           <p>{{ product.description }}</p>
         </div>
 
-        <div class="product-price">
-          <p class="price">${{ product.price }}</p>
-          <p class="stock" [class.out-of-stock]="!product.inStock">
-            {{ product.inStock ? 'In Stock' : 'Out of Stock' }}
-          </p>
-        </div>
-
-        <div class="product-actions">
-          <button class="add-to-cart-btn" (click)="addToCart()" [disabled]="!product.inStock">
-            Add to Cart
+        <div class="actions-row">
+          <button class="btn-primary btn-lg" (click)="addToCart()" [disabled]="!product.inStock">
+            Add to cart
           </button>
-          <button class="back-btn" (click)="goBack()">Back to Products</button>
         </div>
       </div>
-    </div>
-  } @else if (errorMessage) {
-    <div class="error-message">
-      <p>{{ errorMessage }}</p>
-      <button class="back-btn" (click)="goBack()">Back to Products</button>
-    </div>
-  } @else {
-    <div class="loading">
-      <p>Loading product details...</p>
     </div>
   }
 </section>

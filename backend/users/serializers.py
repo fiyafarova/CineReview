@@ -3,9 +3,7 @@ from decimal import Decimal
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from rest_framework import serializers
-
-from .models import UserProfile
-
+from .models import UserProfile, WishlistItem
 
 class RegisterSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=150)
@@ -77,3 +75,32 @@ class UserSerializer(serializers.Serializer):
         if not profile:
             return float(Decimal('0.00'))
         return float(profile.bonusBalance)
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    # данные модели User
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.CharField(source='user.email', read_only=True)
+
+    bonus_balance = serializers.DecimalField(
+        source='bonusBalance',
+        max_digits=10,
+        decimal_places=2,
+        read_only=True
+    )
+
+    class Meta:
+        model = UserProfile
+        fields = ['username', 'email', 'phone', 'city', 'address', 'bonus_balance']
+
+
+class WishlistItemSerializer(serializers.ModelSerializer):
+    product_id = serializers.IntegerField(source='product.id', read_only=True)
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    product_price = serializers.DecimalField(
+        source='product.price', max_digits=10, decimal_places=2, read_only=True
+    )
+
+    class Meta:
+        model = WishlistItem
+        fields = ['id', 'product_id', 'product_name', 'product_price', 'created_at']

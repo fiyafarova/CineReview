@@ -1,0 +1,26 @@
+<div class="wishlist-container">
+  <div class="page-header">
+    <h2>My Wishlist</h2>
+  </div>
+
+  @for (item of items; track item.id) {
+    <div class="modern-card wishlist-card">
+      <div class="product-info">
+        <h3 class="name">{{ item.product_name }}</h3>
+        <span class="price">{{ item.product_price | number:'1.2-2' }} $</span>
+      </div>
+
+      <div class="wishlist-actions">
+        <button (click)="remove(item.product_id)" class="btn-icon-danger" title="Remove">
+          🗑
+        </button>
+      </div>
+    </div>
+  } @empty {
+    <div class="empty-state modern-card">
+      <div class="empty-icon">❤️</div>
+      <p>Your wishlist is empty.</p>
+      <button class="btn-primary" routerLink="/products">Go Shopping</button>
+    </div>
+  }
+</div>

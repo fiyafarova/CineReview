@@ -3,8 +3,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from .serializers import LoginSerializer, RegisterSerializer, UserSerializer
+from .models import UserProfile, WishlistItem
+from .serializers import (
+    LoginSerializer,
+    RegisterSerializer,
+    UserSerializer,
+    ProfileSerializer,
+    WishlistItemSerializer
+)
 
 
 def get_tokens_for_user(user):
@@ -77,3 +83,43 @@ def me_view(request):
         {'user': UserSerializer(request.user).data},
         status=status.HTTP_200_OK
     )
+
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+def profile_view(request):
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'GET':
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data)
+
+    serializer = ProfileSerializer(profile, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def wishlist_view(request):
+    if request.method == 'GET':
+        # select_related ускоряет запрос, подтягивая данные о товаре сразу
+        items = WishlistItem.objects.filter(user=request.user).select_related('product')
+        return Response(WishlistItemSerializer(items, many=True).data)
+
+    product_id = request.data.get('product_id')
+    if not product_id:
+        return Response({'detail': 'product_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    item, created = WishlistItem.objects.get_or_create(
+        user=request.user, product_id=product_id
+    )
+    if not created:
+        return Response({'detail': 'Already in wishlist'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(WishlistItemSerializer(item).data, status=status.HTTP_201_CREATED)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def wishlist_delete_view(request, product_id):
+    WishlistItem.objects.filter(user=request.user, product_id=product_id).delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)

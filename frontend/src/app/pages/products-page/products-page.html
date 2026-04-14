@@ -1,53 +1,55 @@
-<section class="products-page">
-  <div class="products-header">
-    <h1>Product Catalog</h1>
-    <p>Discover our wide range of products</p>
-  </div>
+<section class="container-custom">
+  <header class="page-header text-center">
+    <h1>Product catalog</h1>
+    <p>Find exactly what you need</p>
+  </header>
 
-  <div class="filters">
+  <div class="filters-bar modern-card">
     <div class="filter-group">
-      <label for="category-select">Filter by Category:</label>
-      <select id="category-select" [(ngModel)]="selectedCategoryId" (change)="filterByCategory()">
-        <option value="">All Categories</option>
-        <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+      <label>Category</label>
+      <select [(ngModel)]="selectedCategoryId" (change)="filterByCategory()">
+        <option value="">All categories</option>
+        @for (cat of categories; track cat.id) {
+          <option [value]="cat.id">{{ cat.name }}</option>
+        }
       </select>
     </div>
 
-    <div class="filter-group">
-      <label for="search-input">Search by Name:</label>
-      <input id="search-input" type="text" [(ngModel)]="searchTerm" (input)="filterProducts()" placeholder="Search products...">
+    <div class="filter-group search-box">
+      <label>Search</label>
+      <input type="text" [(ngModel)]="searchTerm" (input)="filterProducts()" placeholder="Product name...">
     </div>
   </div>
 
-  @if (errorMessage) {
-    <div class="error-message">
-      <p>{{ errorMessage }}</p>
-    </div>
-  }
-
   @if (filteredProducts.length === 0 && !loading) {
-    <div class="no-products">
-      <p>No products found</p>
+    <div class="empty-state modern-card">
+      <p>Unfortunately, nothing was found</p>
     </div>
   } @else {
     <div class="products-grid">
       @for (product of filteredProducts; track product.id) {
-        <article class="product-card">
-          <div class="product-image">
+        <article class="modern-card product-card">
+          <div class="product-img-wrapper" (click)="viewProduct(product.id)">
             <img [src]="product.image" [alt]="product.name" loading="lazy">
           </div>
-          <div class="product-info">
-            <h3>{{ product.name }}</h3>
-            <p class="category">{{ product.category.name }}</p>
-            <p class="description">{{ product.description }}</p>
-            <p class="price">${{ product.price }}</p>
-            <p class="stock" [class.out-of-stock]="!product.inStock">
-              {{ product.inStock ? 'In Stock' : 'Out of Stock' }}
-            </p>
+
+          <div class="product-content">
+            <span class="category-tag">{{ product.category.name }}</span>
+            <h3 class="product-title">{{ product.name }}</h3>
+            <p class="product-price">{{ product.price | number:'1.0-0' }} $</p>
+
+            <div class="product-status" [class.out-of-stock]="!product.inStock">
+              {{ product.inStock ? 'In stock' : 'Out of stock' }}
+            </div>
           </div>
-          <div class="product-actions">
-            <button class="view-btn" (click)="viewProduct(product.id)">View Details</button>
-            <button class="add-to-cart-btn" (click)="addToCart(product)" [disabled]="!product.inStock">Add to Cart</button>
+
+          <div class="product-footer">
+            <button class="btn-primary flex-1" (click)="addToCart(product)" [disabled]="!product.inStock">
+              Add to cart
+            </button>
+            <button class="btn-wishlist" (click)="addToWishlist(product.id)" title="Add to wishlist">
+              ❤
+            </button>
           </div>
         </article>
       }

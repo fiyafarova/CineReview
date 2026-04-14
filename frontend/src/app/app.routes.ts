@@ -3,6 +3,8 @@ import { CartPage } from './pages/cart-page/cart-page';
 import { OrdersPage } from './pages/orders-page/orders-page';
 import { ProductsPage } from './pages/products-page/products-page';
 import { ProductDetailPage } from './pages/product-detail-page/product-detail-page';
+import { ProfileComponent } from './pages/profile/profile.component';
+import { WishlistComponent } from './pages/wishlist/wishlist.component';
 // страницы авторизации
 import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
@@ -24,6 +26,10 @@ export const routes: Routes = [
   { path: 'cart',   component: CartPage,   canActivate: [AuthGuard] },
   { path: 'orders', component: OrdersPage, canActivate: [AuthGuard] },
 
-  // 404
-  { path: '**', redirectTo: 'products' }
+  //профиль и вишлист
+  { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
+  { path: 'wishlist', component: WishlistComponent, canActivate: [AuthGuard] },
+
+  // 404 ОБЯЗАТЕЛЬНО ПЕРЕМЕСТИТЬ ВНИЗ СПИСКА ПРИ ДОБАВЛЕНИИ НОВЫХ ПУТЕЙ
+  { path: '**', redirectTo: 'products' },
 ];
