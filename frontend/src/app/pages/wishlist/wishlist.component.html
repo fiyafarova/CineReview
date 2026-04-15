@@ -1,13 +1,25 @@
+<!-- #st -->
 <div class="wishlist-container">
   <div class="page-header">
     <h2>My Wishlist</h2>
   </div>
 
+  @if (errorMessage) {
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  }
+
+  <!-- Каждая карточка ведёт обратно на страницу товара. -->
   @for (item of items; track item.id) {
     <div class="modern-card wishlist-card">
+      <a class="wishlist-image" [routerLink]="['/products', item.product_id]">
+        <img [src]="item.product_image" [alt]="item.product_name">
+      </a>
+
       <div class="product-info">
+        <span class="wishlist-category">{{ item.product_category }}</span>
         <h3 class="name">{{ item.product_name }}</h3>
         <span class="price">{{ item.product_price | number:'1.2-2' }} $</span>
+        <a class="wishlist-link" [routerLink]="['/products', item.product_id]">Open product</a>
       </div>
 
       <div class="wishlist-actions">
@@ -20,7 +32,7 @@
     <div class="empty-state modern-card">
       <div class="empty-icon">❤️</div>
       <p>Your wishlist is empty.</p>
-      <button class="btn-primary" routerLink="/products">Go Shopping</button>
+      <a class="btn-primary wishlist-shop-link" routerLink="/products">Go Shopping</a>
     </div>
   }
 </div>

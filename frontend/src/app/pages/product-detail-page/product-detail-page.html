@@ -1,20 +1,58 @@
+<!-- #st -->
 <section class="container-custom">
   <button class="btn-back" (click)="goBack()">← Back to shopping</button>
 
-  @if (product) {
+  @if (successMessage) {
+    <div class="alert alert-success">{{ successMessage }}</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  }
+
+  @if (loading) {
+    <div class="modern-card detail-state-card">
+      <p>Loading product details...</p>
+    </div>
+  } @else if (product) {
+    <!-- Верхний блок страницы товара: галерея, цена, характеристики и быстрые действия. -->
     <div class="product-detail-grid">
-      <div class="detail-image-box modern-card">
-        <img [src]="product.image" [alt]="product.name">
+      <div class="detail-gallery-column">
+        <div class="detail-image-box modern-card">
+          <img [src]="selectedImage || product.image" [alt]="product.name">
+        </div>
+
+        @if (product.gallery?.length) {
+          <div class="gallery-strip">
+            @for (image of product.gallery; track image.id) {
+              <button class="gallery-thumb" type="button" (click)="selectImage(image.image_url)">
+                <img [src]="image.image_url" [alt]="image.alt_text || product.name">
+              </button>
+            }
+          </div>
+        }
       </div>
 
       <div class="detail-info-box">
         <span class="category-label">{{ product.category.name }}</span>
         <h1>{{ product.name }}</h1>
 
-        <div class="price-tag">{{ product.price | number:'1.0-0' }} $</div>
+        <p class="brand-line">{{ product.brand }}</p>
+
+        <div class="rating-line">
+          <span class="stars">{{ getStars(product.rating) }}</span>
+          <span>{{ product.rating | number:'1.1-1' }} · {{ product.reviewCount }} reviews</span>
+        </div>
+
+        <div class="price-stack">
+          <div class="price-tag">{{ product.price | number:'1.0-0' }} $</div>
+          @if (product.oldPrice) {
+            <div class="old-price">{{ product.oldPrice | number:'1.0-0' }} $</div>
+          }
+        </div>
 
         <div class="status-indicator" [class.out-of-stock]="!product.inStock">
-          {{ product.inStock ? 'In stock' : 'Sold out' }}
+          {{ product.inStock ? ('In stock · ' + product.stock + ' items available') : 'Sold out' }}
         </div>
 
         <div class="description-block">
@@ -22,12 +60,90 @@
           <p>{{ product.description }}</p>
         </div>
 
+        @if (product.specifications?.length) {
+          <div class="specs-block modern-card">
+            <h3>Specifications</h3>
+            <div class="specs-grid">
+              @for (spec of product.specifications; track spec.id) {
+                <div class="spec-row">
+                  <span>{{ spec.name }}</span>
+                  <strong>{{ spec.value }}</strong>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <div class="actions-row">
           <button class="btn-primary btn-lg" (click)="addToCart()" [disabled]="!product.inStock">
             Add to cart
           </button>
+          <button class="btn-secondary btn-lg" type="button" (click)="toggleWishlist()">
+            {{ isWishlisted ? 'Remove from favorites' : 'Add to favorites' }}
+          </button>
         </div>
       </div>
+    </div>
+
+    <!-- Нижний блок страницы товара: форма отзыва и список отзывов покупателей. -->
+    <section class="reviews-section">
+      <div class="modern-card review-form-card">
+        <h3>Leave a review</h3>
+
+        <div class="review-form-grid">
+          <div class="filter-group compact-field">
+            <label>Rating</label>
+            <div class="rating-selector">
+              @for (star of reviewStars; track star) {
+                <button
+                  type="button"
+                  class="star-button"
+                  [class.active]="star <= reviewRating"
+                  (click)="setReviewRating(star)">
+                  ★
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="filter-group review-comment-field">
+            <label>Comment</label>
+            <textarea [(ngModel)]="reviewComment" rows="4" placeholder="Tell us what you liked, what stood out, and how it feels in real use."></textarea>
+          </div>
+        </div>
+
+        <button class="btn-primary" type="button" (click)="submitReview()" [disabled]="reviewSubmitting">
+          {{ reviewSubmitting ? 'Submitting...' : 'Submit review' }}
+        </button>
+      </div>
+
+      <div class="reviews-list">
+        <h3>Customer reviews</h3>
+
+        @if (product.reviews?.length) {
+          @for (review of product.reviews; track review.id) {
+            <article class="modern-card review-card">
+              <div class="review-card__top">
+                <div>
+                  <strong>{{ review.user_name }}</strong>
+                  <p>{{ review.created_at | date:'mediumDate' }}</p>
+                </div>
+                <span class="stars">{{ getStars(review.rating) }}</span>
+              </div>
+
+              <p>{{ review.comment || 'No written comment left.' }}</p>
+            </article>
+          }
+        } @else {
+          <div class="modern-card review-card empty-review">
+            <p>No reviews yet. Be the first to rate this product.</p>
+          </div>
+        }
+      </div>
+    </section>
+  } @else {
+    <div class="modern-card detail-state-card">
+      <p>{{ errorMessage || 'Product not found.' }}</p>
     </div>
   }
 </section>

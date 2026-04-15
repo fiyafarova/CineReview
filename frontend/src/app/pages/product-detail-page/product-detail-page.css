@@ -1,3 +1,4 @@
+/* #st */
 .btn-back {
   background: none;
   border: none;
@@ -11,11 +12,24 @@
   color: var(--primary);
 }
 
+.detail-state-card {
+  margin-top: 24px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Основная двухколоночная сетка страницы товара. */
 .product-detail-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
   gap: 60px;
   align-items: start;
+}
+
+.detail-gallery-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .detail-image-box {
@@ -26,7 +40,30 @@
 
 .detail-image-box img {
   width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
   border-radius: var(--radius);
+}
+
+.gallery-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 12px;
+}
+
+.gallery-thumb {
+  border: 1px solid var(--border-color);
+  background: #fff;
+  border-radius: 14px;
+  padding: 6px;
+  cursor: pointer;
+}
+
+.gallery-thumb img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 10px;
 }
 
 .category-label {
@@ -36,6 +73,25 @@
   font-size: 13px;
 }
 
+.brand-line {
+  color: var(--text-muted);
+  font-size: 15px;
+  margin: 0 0 12px;
+}
+
+.rating-line {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.stars {
+  color: #f59e0b;
+  letter-spacing: 1px;
+}
+
 .detail-info-box h1 {
   font-size: 42px;
   margin: 12px 0;
@@ -43,11 +99,23 @@
   line-height: 1.1;
 }
 
+.price-stack {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
 .price-tag {
   font-size: 32px;
   font-weight: 800;
   color: var(--text-main);
   margin: 24px 0;
+}
+
+.old-price {
+  color: var(--text-muted);
+  text-decoration: line-through;
+  font-weight: 600;
 }
 
 .status-indicator {
@@ -74,8 +142,38 @@
   font-size: 16px;
 }
 
+.specs-block {
+  margin-top: 28px;
+}
+
+.specs-block h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.specs-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.spec-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-muted);
+}
+
+.spec-row strong {
+  color: var(--text-main);
+}
+
 .actions-row {
   margin-top: 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 .btn-lg {
@@ -84,9 +182,118 @@
   width: 100%;
 }
 
+.btn-secondary {
+  background: #fff;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 18px 40px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Секция отзывов под основной информацией о товаре. */
+.reviews-section {
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) 1fr;
+  gap: 24px;
+}
+
+.review-form-card h3,
+.reviews-list h3 {
+  margin-top: 0;
+  margin-bottom: 18px;
+}
+
+.review-form-grid {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.rating-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.star-button {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: #fff;
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 22px;
+}
+
+.star-button.active {
+  color: #f59e0b;
+  border-color: #fcd34d;
+  background: #fffbeb;
+}
+
+.filter-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.filter-group select,
+.filter-group textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-sizing: border-box;
+  font: inherit;
+}
+
+.review-comment-field textarea {
+  resize: vertical;
+}
+
+.reviews-list {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.review-card {
+  padding: 20px 24px;
+}
+
+.review-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.review-card__top p {
+  margin: 6px 0 0;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.empty-review {
+  color: var(--text-muted);
+}
+
 @media (max-width: 900px) {
   .product-detail-grid {
     grid-template-columns: 1fr;
     gap: 32px;
+  }
+
+  .actions-row,
+  .reviews-section {
+    grid-template-columns: 1fr;
   }
 }
