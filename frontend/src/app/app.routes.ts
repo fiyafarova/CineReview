@@ -1,3 +1,4 @@
+// #st
 import { Routes } from '@angular/router';
 import { CartPage } from './pages/cart-page/cart-page';
 import { OrdersPage } from './pages/orders-page/orders-page';
@@ -15,12 +16,12 @@ export const routes: Routes = [
   { path: 'login',    component: LoginComponent },
   { path: 'register', component: RegisterComponent },
 
-  // редирект с корня на products
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  // С корня сразу уводим в каталог, чтобы пользователь видел товары без лишнего шага.
+  { path: '', redirectTo: 'products', pathMatch: 'full' },
 
-  // каталог (защищённые)
-  { path: 'products',     component: ProductsPage,      canActivate: [AuthGuard] },
-  { path: 'products/:id', component: ProductDetailPage, canActivate: [AuthGuard] },
+  // Каталог и страница товара сделаны публичными для более удобного сценария просмотра.
+  { path: 'products',     component: ProductsPage },
+  { path: 'products/:id', component: ProductDetailPage },
 
   // корзина и заказы (защищённые)
   { path: 'cart',   component: CartPage,   canActivate: [AuthGuard] },
@@ -30,6 +31,6 @@ export const routes: Routes = [
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'wishlist', component: WishlistComponent, canActivate: [AuthGuard] },
 
-  // 404 ОБЯЗАТЕЛЬНО ПЕРЕМЕСТИТЬ ВНИЗ СПИСКА ПРИ ДОБАВЛЕНИИ НОВЫХ ПУТЕЙ
+  // Запасной маршрут тоже возвращает в каталог, чтобы пользователь не попадал на пустую страницу.
   { path: '**', redirectTo: 'products' },
 ];

@@ -1,3 +1,4 @@
+<!-- #st -->
 @if (!hideNavbar) {
   <nav class="navbar">
     <div class="navbar-container">
@@ -19,6 +20,12 @@
             </a>
             <span class="navbar-user__bonus">Bonus: {{ currentUser.bonusBalance }}</span>
             <button class="btn-logout-nav" (click)="onLogout()">Log out</button>
+          </div>
+        } @else {
+          <!-- Для публичного каталога показываем быстрые ссылки на вход и регистрацию. -->
+          <div class="navbar-user">
+            <a routerLink="/login" class="navbar-user__link" routerLinkActive="active-user">Log in</a>
+            <a routerLink="/register" class="btn-primary">Register</a>
           </div>
         }
       </div>
