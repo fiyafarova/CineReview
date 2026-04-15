@@ -1,3 +1,4 @@
+#st
 """
 URL configuration for backend project.
 
@@ -23,8 +24,8 @@ urlpatterns = [
     # Sofiua - Auth
     path('api/auth/', include('users.urls')),
 
-    # Togzhan - Products
-    # path('api/', include('products.urls')),
+    # Модуль товаров: отдельный API-блок каталога.
+    path('api/products/', include('products.urls')),
 
     # Shynggyskhan - Orders
     path('api/orders/', include('orders.urls')),
