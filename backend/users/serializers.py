@@ -95,12 +95,15 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class WishlistItemSerializer(serializers.ModelSerializer):
+    # Для избранного сразу пробрасываем данные карточки товара, чтобы клиент не делал лишние запросы.
     product_id = serializers.IntegerField(source='product.id', read_only=True)
     product_name = serializers.CharField(source='product.name', read_only=True)
+    product_image = serializers.CharField(source='product.image', read_only=True)
+    product_category = serializers.CharField(source='product.category.name', read_only=True)
     product_price = serializers.DecimalField(
         source='product.price', max_digits=10, decimal_places=2, read_only=True
     )
 
     class Meta:
         model = WishlistItem
-        fields = ['id', 'product_id', 'product_name', 'product_price', 'created_at']
+        fields = ['id', 'product_id', 'product_name', 'product_image', 'product_category', 'product_price', 'created_at']
