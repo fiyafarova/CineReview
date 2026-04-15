@@ -117,6 +117,6 @@ Product and category management for staff users is available at `/admin`:
 
 | Name                       | Module |
 |----------------------------|---|
-| **Sofia Safarova**         | Profile · Wishlist · Navigation · Auth UI |
+| **Sofiya Safarova**         | Profile · Wishlist · Navigation · Auth UI |
 | **Togzhan Sauytbay**       | Products · Categories · Admin · Search/Filter · Reviews |
 | **Shynggyskhan Bassarbek** | Orders · Statuses · Checkout · Promo Codes · Bonus System |
