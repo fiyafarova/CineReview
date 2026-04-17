@@ -1,26 +1,73 @@
-<section class="container-custom">
-  <div class="page-header">
-    <h1>My orders</h1>
+<section class="orders-page">
+  <div class="orders-header">
+    <h1>My Orders</h1>
+    <p>Your order history</p>
   </div>
 
-  <div class="orders-stack">
-    @for (order of orders(); track order.id) {
-      <div class="modern-card order-entry">
-        <div class="order-header">
-          <div>
-            <span class="order-number">Order #{{ order.id }}</span>
-            <span class="order-date">{{ order.createdAt | date:'dd.MM.yyyy' }}</span>
+  @if (orders().length === 0) {
+    <div class="empty-orders">
+      <p>No orders yet</p>
+    </div>
+  } @else {
+    <div class="orders-list">
+      @for (order of orders(); track order.id) {
+        <article class="order-card">
+          <div class="order-card__top">
+            <div class="order-card__heading">
+              <h3>Order #{{ order.id }}</h3>
+
+              <div class="order-card__badges">
+                <!-- Статус заказа -->
+                <span class="order-status" [ngClass]="getStatusClass(order.status)">
+                  {{ getStatusLabel(order.status) }}
+                </span>
+
+                <span class="order-date">
+                  {{ order.createdAt | date:'dd MMM yyyy, HH:mm' }}
+                </span>
+              </div>
+            </div>
+
+            @if (canCancel(order)) {
+              <button
+                class="cancel-btn"
+                (click)="cancelOrder(order)"
+                [disabled]="isCancellingId() === order.id"
+              >
+                {{ isCancellingId() === order.id ? 'Cancelling...' : 'Cancel order' }}
+              </button>
+            }
           </div>
-          <span class="badge" [ngClass]="order.status">
-            {{ getStatusLabel(order.status) }}
-          </span>
-        </div>
 
-        <div class="order-details">
-          <p><strong>Address:</strong> {{ order.customerAddress }}</p>
-          <p class="order-total">Total: {{ order.total | number:'1.0-0' }} </p>
-        </div>
-      </div>
-    }
-  </div>
+          <div class="order-meta">
+            <p><strong>Name:</strong> {{ order.customerName }}</p>
+            <p><strong>Address:</strong> {{ order.customerAddress }}</p>
+            <p><strong>Phone:</strong> {{ order.customerPhone }}</p>
+            <p><strong>Items count:</strong> {{ getItemsCount(order) }}</p>
+
+            <!-- Дополнительные поля checkout, которые теперь приходят с backend -->
+            <p><strong>Subtotal:</strong> {{ order.subtotal ?? order.total }}</p>
+            <p><strong>Discount:</strong> - {{ order.discountAmount ?? 0 }}</p>
+            <p><strong>Total:</strong> {{ order.total }}</p>
+            <p><strong>Bonus earned:</strong> +{{ order.earnedBonus ?? 0 }}</p>
+
+            @if (order.promoCode) {
+              <p><strong>Promo:</strong> {{ order.promoCode }}</p>
+            }
+          </div>
+
+          <div class="order-products">
+            <h4>Products</h4>
+
+            @for (item of order.items; track item.id) {
+              <div class="product-row">
+                <span>{{ item.name }}</span>
+                <span>{{ item.qty }} x {{ item.price }}</span>
+              </div>
+            }
+          </div>
+        </article>
+      }
+    </div>
+  }
 </section>

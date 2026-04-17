@@ -1,47 +1,73 @@
-<section class="container-custom">
-  <div class="page-header">
+<section class="cart-page">
+  <div class="cart-header">
     <h1>Cart</h1>
-    <p>Review your items before placing the order</p>
+    <p>Review your items and complete your order</p>
   </div>
 
   @if (items.length === 0) {
-    <div class="empty-state modern-card">
+    <div class="empty-cart">
       <p>Your cart is empty</p>
-      <button class="btn-primary" routerLink="/products">Go to shopping</button>
     </div>
   } @else {
-    <div class="cart-grid">
-      <div class="cart-list">
+    <div class="cart-layout">
+      <div class="cart-items">
         @for (item of items; track item.id) {
-          <article class="modern-card cart-item">
-            <div class="item-info">
+          <article class="cart-card">
+            <div class="cart-card__info">
               <h3>{{ item.name }}</h3>
-              <p class="item-price">{{ item.price | number:'1.0-0' }} $</p>
-              <p class="item-subtotal">Subtotal: {{ item.price * item.qty | number:'1.0-0' }} $</p>
+              <p>Price per item: {{ item.price }}</p>
+              <p>Quantity: {{ item.qty }}</p>
+              <p class="subtotal">Subtotal: {{ item.price * item.qty }}</p>
             </div>
-            <div class="item-actions">
-              <div class="qty-control">
-                <button (click)="decreaseQty(item)">-</button>
-                <span>{{ item.qty }}</span>
-                <button (click)="increaseQty(item)">+</button>
-              </div>
-              <button class="btn-danger-light" (click)="removeItem(item.id)">Remove</button>
+
+            <div class="cart-card__actions">
+              <button class="qty-btn" (click)="increaseQty(item)">+</button>
+              <button class="qty-btn" (click)="decreaseQty(item)">-</button>
+              <button class="delete-btn" (click)="removeItem(item.id)">Delete</button>
             </div>
           </article>
         }
       </div>
 
-      <aside class="modern-card checkout-sidebar">
+      <aside class="checkout-panel">
         <h2>Checkout</h2>
-        <div class="summary-row">
-          <span>Subtotal:</span>
-          <span>{{ summary.subtotal }} $</span>
+
+        <!-- Промокод сразу влияет на backend preview -->
+        <div class="form-group">
+          <label>Promo code</label>
+          <input
+            type="text"
+            [(ngModel)]="promoCode"
+            (ngModelChange)="refreshCheckout()"
+            placeholder="Enter promo code"
+          />
         </div>
-        <div class="summary-row total">
-          <span>Total due:</span>
-          <span>{{ summary.total }} $</span>
+
+        @if (promoErrorMessage) {
+          <p class="promo-error">{{ promoErrorMessage }}</p>
+        }
+        <!-- Эти значения теперь должны приезжать из backend preview -->
+        <p>Subtotal: {{ summary.subtotal }}</p>
+        <p>Discount: - {{ summary.discountAmount }}</p>
+        <p class="total">Total: {{ summary.total }}</p>
+        <p>Bonus after order: +{{ summary.earnedBonus }}</p>
+
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" [(ngModel)]="customerName" placeholder="Enter your name" />
         </div>
-        <button class="btn-primary w-full" (click)="placeOrder()">Place order</button>
+
+        <div class="form-group">
+          <label>Address</label>
+          <input type="text" [(ngModel)]="customerAddress" placeholder="Enter your address" />
+        </div>
+
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" [(ngModel)]="customerPhone" placeholder="Enter your phone number" />
+        </div>
+
+        <button class="order-btn" (click)="placeOrder()">Place Order</button>
       </aside>
     </div>
   }

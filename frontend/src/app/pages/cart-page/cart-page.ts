@@ -6,11 +6,10 @@ import { CheckoutSummary, Order } from '../../models/order';
 import { AuthService } from '../../service/auth.service';
 import { CartService } from '../../service/cart.service';
 import { OrderService } from '../../service/order.service';
-import {DecimalPipe} from '@angular/common';
 
 @Component({
   selector: 'app-cart-page',
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule],
   templateUrl: './cart-page.html',
   styleUrl: './cart-page.css',
 })

@@ -18,6 +18,7 @@ from .serializers import (
 
 class CategoryListView(generics.ListAPIView):
     # Публичный список категорий для фильтра на клиенте.
+    authentication_classes = []
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [AllowAny]
@@ -25,6 +26,7 @@ class CategoryListView(generics.ListAPIView):
 
 class ProductListView(generics.ListAPIView):
     # Каталог товаров поддерживает поиск, фильтры и сортировку через параметры запроса.
+    authentication_classes = []
     serializer_class = ProductListSerializer
     permission_classes = [AllowAny]
 

@@ -60,7 +60,7 @@ export class AuthService {
     }
 
     this.clearSession();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/products']);
   }
 
   // После логина/регистрации сохраняем не только токены,

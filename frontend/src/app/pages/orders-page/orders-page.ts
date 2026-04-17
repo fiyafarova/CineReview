@@ -1,12 +1,12 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import {DatePipe, DecimalPipe, NgClass} from '@angular/common';
+import { DatePipe, NgClass } from '@angular/common';
 import { Order, OrderStatus } from '../../models/order';
 import { AuthService } from '../../service/auth.service';
 import { OrderService } from '../../service/order.service';
 
 @Component({
   selector: 'app-orders-page',
-  imports: [DatePipe, NgClass, DecimalPipe],
+  imports: [DatePipe, NgClass],
   templateUrl: './orders-page.html',
   styleUrl: './orders-page.css',
 })

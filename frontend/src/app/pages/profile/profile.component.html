@@ -7,8 +7,9 @@
   @if (successMessage) {
     <div class="alert alert-success">{{ successMessage }}</div>
   }
-
-  @if (profile) {
+  @if (isLoading) {
+    <div class="loading">Loading...</div>
+  } @else if (profile) {
     <div class="modern-card profile-card">
       <div class="profile-rows">
         <div class="info-row">
@@ -57,7 +58,7 @@
 
       <div class="bonus-highlight">
         <div class="bonus-label">Bonus balance:</div>
-        <div class="bonus-amount">{{ profile.bonus_balance | number:'1.0-0' }} $</div>
+        <div class="bonus-amount">{{ profile.bonus_balance }} $</div>
       </div>
 
       <div class="profile-actions">
