@@ -82,6 +82,7 @@ class ProductListView(generics.ListAPIView):
 
 class ProductDetailView(generics.RetrieveAPIView):
     # Публичная страница одного товара.
+    authentication_classes = []
     serializer_class = ProductDetailSerializer
     permission_classes = [AllowAny]
 
