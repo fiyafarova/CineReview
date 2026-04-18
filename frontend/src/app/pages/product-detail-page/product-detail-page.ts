@@ -21,7 +21,6 @@ export class ProductDetailPage implements OnInit {
   loading: boolean = true;
   errorMessage: string = '';
   successMessage: string = '';
-  selectedImage: string = '';
   reviewRating: number = 5;
   reviewComment: string = '';
   reviewSubmitting: boolean = false;
@@ -61,7 +60,6 @@ export class ProductDetailPage implements OnInit {
     this.productService.getById(id).subscribe({
       next: (product) => {
         this.product = product;
-        this.selectedImage = product.gallery?.[0]?.image_url || product.image;
         this.loading = false;
         this.loadWishlistState(product.id);
         this.cdr.detectChanges();
@@ -149,11 +147,6 @@ export class ProductDetailPage implements OnInit {
         this.cdr.detectChanges();
       }
     });
-  }
-
-  selectImage(imageUrl: string): void {
-    // Переключение активной картинки в галерее.
-    this.selectedImage = imageUrl;
   }
 
   submitReview(): void {
