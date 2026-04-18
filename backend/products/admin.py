@@ -5,11 +5,6 @@ from django import forms
 from .models import Category, Product, ProductImage, ProductSpecification, Review
 
 
-class ProductImageInline(admin.TabularInline):
-    model = ProductImage
-    extra = 1
-
-
 class ProductSpecificationInline(admin.TabularInline):
     model = ProductSpecification
     extra = 1
@@ -42,7 +37,7 @@ class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'brand', 'price', 'is_active', 'created_at')
     list_filter = ('category', 'brand', 'is_active', 'created_at')
     search_fields = ('name', 'brand', 'description')
-    inlines = [ProductImageInline, ProductSpecificationInline]
+    inlines = [ProductSpecificationInline]
 
 
 @admin.register(Review)
