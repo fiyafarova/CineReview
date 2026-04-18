@@ -87,8 +87,8 @@ class ProductListSerializer(serializers.ModelSerializer):
         ]
 
     def get_inStock(self, obj):
-        # Клиент получает уже готовое булево значение вместо ручной проверки остатка.
-        return obj.stock > 0
+        # Раз товар активен и доступен в каталоге, клиент может считать его доступным к покупке.
+        return obj.is_active
 
     def get_isOnSale(self, obj):
         # Скидка считается только если old_price реально выше текущей цены.

@@ -1,5 +1,6 @@
 #st
 from django.contrib import admin
+from django import forms
 
 from .models import Category, Product, ProductImage, ProductSpecification, Review
 
@@ -14,6 +15,19 @@ class ProductSpecificationInline(admin.TabularInline):
     extra = 1
 
 
+class ProductAdminForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        exclude = ['stock']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in ('price', 'old_price'):
+            field = self.fields.get(field_name)
+            if field:
+                field.widget.attrs['min'] = '0'
+
+
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name', 'slug')
@@ -24,7 +38,8 @@ class CategoryAdmin(admin.ModelAdmin):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     # Здесь менеджер видит ключевые поля товара и его связанные блоки.
-    list_display = ('name', 'category', 'brand', 'price', 'stock', 'is_active', 'created_at')
+    form = ProductAdminForm
+    list_display = ('name', 'category', 'brand', 'price', 'is_active', 'created_at')
     list_filter = ('category', 'brand', 'is_active', 'created_at')
     search_fields = ('name', 'brand', 'description')
     inlines = [ProductImageInline, ProductSpecificationInline]
