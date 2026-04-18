@@ -1,0 +1,283 @@
+{
+  "info": {
+    "name": "Products API (Togzhan)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "product_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "category_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get All Products",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/products/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            ""
+          ]
+        },
+        "description": "Returns all active products for the catalog page. Public endpoint."
+      },
+      "response": [
+        {
+          "name": "200 OK - product list",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"Nova X Pro 256GB\",\n    \"description\": \"Flagship smartphone with strong everyday specs.\",\n    \"brand\": \"NovaTech\",\n    \"price\": \"599.00\",\n    \"oldPrice\": \"679.00\",\n    \"image\": \"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1200&q=80\",\n    \"category\": {\n      \"id\": 1,\n      \"name\": \"Smartphones\",\n      \"slug\": \"smartphones\"\n    },\n    \"inStock\": true,\n    \"stock\": 18,\n    \"rating\": 5.0,\n    \"reviewCount\": 2,\n    \"isOnSale\": true,\n    \"isNew\": true\n  }\n]"
+        }
+      ]
+    },
+    {
+      "name": "2. Get Categories",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/products/categories/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            "categories",
+            ""
+          ]
+        },
+        "description": "Returns all product categories for the catalog filter. Public endpoint."
+      },
+      "response": [
+        {
+          "name": "200 OK - category list",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "[\n  {\n    \"id\": 1,\n    \"name\": \"Smartphones\",\n    \"slug\": \"smartphones\"\n  },\n  {\n    \"id\": 2,\n    \"name\": \"Laptops\",\n    \"slug\": \"laptops\"\n  }\n]"
+        }
+      ]
+    },
+    {
+      "name": "3. Get Product By Id",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/products/{{product_id}}/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            "{{product_id}}",
+            ""
+          ]
+        },
+        "description": "Returns one product with gallery, specifications, and reviews. Public endpoint."
+      },
+      "response": [
+        {
+          "name": "200 OK - product detail",
+          "status": "OK",
+          "code": 200,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"id\": 1,\n  \"name\": \"Nova X Pro 256GB\",\n  \"description\": \"Flagship smartphone with strong everyday specs.\",\n  \"brand\": \"NovaTech\",\n  \"price\": \"599.00\",\n  \"oldPrice\": \"679.00\",\n  \"image\": \"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1200&q=80\",\n  \"category\": {\n    \"id\": 1,\n    \"name\": \"Smartphones\",\n    \"slug\": \"smartphones\"\n  },\n  \"inStock\": true,\n  \"stock\": 18,\n  \"rating\": 5.0,\n  \"reviewCount\": 2,\n  \"isOnSale\": true,\n  \"isNew\": true,\n  \"gallery\": [\n    {\n      \"id\": 1,\n      \"image_url\": \"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1200&q=80\",\n      \"alt_text\": \"Nova X Pro 256GB\",\n      \"sort_order\": 0\n    }\n  ],\n  \"specifications\": [\n    {\n      \"id\": 1,\n      \"name\": \"Display\",\n      \"value\": \"6.7-inch OLED 120Hz\",\n      \"sort_order\": 0\n    }\n  ],\n  \"reviews\": [\n    {\n      \"id\": 1,\n      \"user_name\": \"catalog_demo\",\n      \"rating\": 5,\n      \"comment\": \"Very clean flagship feel.\",\n      \"created_at\": \"2026-04-15T09:33:03.774507Z\"\n    }\n  ]\n}"
+        },
+        {
+          "name": "404 Not Found - invalid product id",
+          "status": "Not Found",
+          "code": 404,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"detail\": \"Not found.\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "4. Filter Products By Category And Price",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/products/?category={{category_id}}&min_price=100&max_price=700&ordering=price&on_sale=true",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            ""
+          ],
+          "query": [
+            {
+              "key": "category",
+              "value": "{{category_id}}"
+            },
+            {
+              "key": "min_price",
+              "value": "100"
+            },
+            {
+              "key": "max_price",
+              "value": "700"
+            },
+            {
+              "key": "ordering",
+              "value": "price"
+            },
+            {
+              "key": "on_sale",
+              "value": "true"
+            }
+          ]
+        },
+        "description": "Example request for category filter, min/max price filter, sorting, and on-sale filter."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Search Products",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/products/?search=phone",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            ""
+          ],
+          "query": [
+            {
+              "key": "search",
+              "value": "phone"
+            }
+          ]
+        },
+        "description": "Searches products by name, description, or brand."
+      },
+      "response": []
+    },
+    {
+      "name": "6. Create Product Review",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{access_token}}"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"rating\": 5,\n  \"comment\": \"Very good product\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/products/{{product_id}}/reviews/",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "products",
+            "{{product_id}}",
+            "reviews",
+            ""
+          ]
+        },
+        "description": "Creates one review for the selected product. Requires a valid JWT access token. One user can leave only one review per product."
+      },
+      "response": [
+        {
+          "name": "201 Created - review added",
+          "status": "Created",
+          "code": 201,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"id\": 15,\n  \"user_name\": \"sofia\",\n  \"rating\": 5,\n  \"comment\": \"Very good product\",\n  \"created_at\": \"2026-04-18T16:20:00.000000Z\"\n}"
+        },
+        {
+          "name": "401 Unauthorized - token required",
+          "status": "Unauthorized",
+          "code": 401,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"detail\": \"Authentication credentials were not provided.\"\n}"
+        },
+        {
+          "name": "400 Bad Request - duplicate review",
+          "status": "Bad Request",
+          "code": 400,
+          "header": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "body": "{\n  \"non_field_errors\": [\n    \"You have already left a review for this product.\"\n  ]\n}"
+        }
+      ]
+    }
+  ]
+}
