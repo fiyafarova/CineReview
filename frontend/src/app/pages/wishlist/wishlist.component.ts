@@ -4,6 +4,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { WishlistService } from '../../service/wishlist.service';
 import { WishlistItem } from '../../models/profile.model';
+import { applyImageFallback } from '../../shared/image-fallback';
 
 @Component({
   selector: 'app-wishlist',
@@ -43,5 +44,9 @@ export class WishlistComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  onImageError(event: Event): void {
+    applyImageFallback(event);
   }
 }

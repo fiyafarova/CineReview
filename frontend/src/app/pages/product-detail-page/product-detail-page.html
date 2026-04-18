@@ -19,7 +19,7 @@
     <div class="product-detail-grid">
       <div class="detail-gallery-column">
         <div class="detail-image-box modern-card">
-          <img [src]="product.image" [alt]="product.name">
+          <img [src]="product.image" [alt]="product.name" (error)="onImageError($event)">
         </div>
       </div>
 

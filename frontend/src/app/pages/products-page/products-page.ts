@@ -8,6 +8,7 @@ import { CartService } from '../../service/cart.service';
 import { Category, Product } from '../../models/product';
 import { WishlistService } from '../../service/wishlist.service';
 import { AuthService } from '../../service/auth.service';
+import { applyImageFallback } from '../../shared/image-fallback';
 
 @Component({
   selector: 'app-products-page',
@@ -100,6 +101,7 @@ export class ProductsPage implements OnInit {
 
   applyFilters(): void {
     // Любое изменение фильтра мгновенно пересчитывает видимый список.
+    this.normalizePriceFilters();
     this.products = this.applyClientGuards(this.allProducts);
   }
 
@@ -116,6 +118,7 @@ export class ProductsPage implements OnInit {
 
   private applyClientGuards(products: Product[]): Product[] {
     // В одном месте держим всю клиентскую фильтрацию и сортировку каталога.
+    this.normalizePriceFilters();
     let filtered = [...products];
 
     if (this.selectedCategoryId) {
@@ -165,6 +168,16 @@ export class ProductsPage implements OnInit {
     });
 
     return filtered;
+  }
+
+  private normalizePriceFilters(): void {
+    if (this.minPrice !== null) {
+      this.minPrice = Math.max(0, this.minPrice);
+    }
+
+    if (this.maxPrice !== null) {
+      this.maxPrice = Math.max(0, this.maxPrice);
+    }
   }
 
   viewProduct(productId: number): void {
@@ -233,5 +246,9 @@ export class ProductsPage implements OnInit {
     // Переводим numeric rating в простую звёздную строку для карточек.
     const filled = Math.round(rating);
     return '★'.repeat(filled) + '☆'.repeat(5 - filled);
+  }
+
+  onImageError(event: Event): void {
+    applyImageFallback(event);
   }
 }

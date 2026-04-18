@@ -8,6 +8,7 @@ import { CartService } from '../../service/cart.service';
 import { Product } from '../../models/product';
 import { WishlistService } from '../../service/wishlist.service';
 import { AuthService } from '../../service/auth.service';
+import { applyImageFallback } from '../../shared/image-fallback';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -197,5 +198,9 @@ export class ProductDetailPage implements OnInit {
   goBack(): void {
     // Возврат на общий каталог.
     this.router.navigate(['/products']);
+  }
+
+  onImageError(event: Event): void {
+    applyImageFallback(event);
   }
 }

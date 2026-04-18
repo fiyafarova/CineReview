@@ -32,12 +32,12 @@
 
     <div class="filter-group compact-field">
       <label>Min price</label>
-      <input type="number" [(ngModel)]="minPrice" (change)="applyFilters()" placeholder="0">
+      <input type="number" [(ngModel)]="minPrice" (change)="applyFilters()" min="0" placeholder="0">
     </div>
 
     <div class="filter-group compact-field">
       <label>Max price</label>
-      <input type="number" [(ngModel)]="maxPrice" (change)="applyFilters()" placeholder="2000">
+      <input type="number" [(ngModel)]="maxPrice" (change)="applyFilters()" min="0" placeholder="2000">
     </div>
 
     <div class="filter-group compact-field">
@@ -88,7 +88,7 @@
           }
 
           <div class="product-img-wrapper" (click)="viewProduct(product.id)">
-            <img [src]="product.image" [alt]="product.name" loading="lazy">
+            <img [src]="product.image" [alt]="product.name" loading="lazy" (error)="onImageError($event)">
           </div>
 
           <div class="product-content">
@@ -111,7 +111,7 @@
             </div>
 
             <div class="product-status" [class.out-of-stock]="!product.inStock">
-              {{ product.inStock ? ('In stock · ' + product.stock + ' left') : 'Out of stock' }}
+              {{ product.inStock ? 'In stock' : 'Out of stock' }}
             </div>
           </div>
 
