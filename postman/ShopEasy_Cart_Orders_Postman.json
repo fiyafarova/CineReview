@@ -1,0 +1,287 @@
+{
+  "info": {
+    "name": "ShopEasy Cart and Orders API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Focused Postman collection for auth, cart checkout preview, order creation, and order history. Note: there is no separate backend cart CRUD API; the cart itself lives on the frontend and is sent to checkout as an items snapshot."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "last_order_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "1. Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"postman-user\",\n  \"email\": \"postman-user@example.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "description": "Create a user and store JWT tokens in collection variables."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('access_token', json.token);",
+                  "if (json.refresh) pm.collectionVariables.set('refresh_token', json.refresh);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"postman-user@example.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login",
+                ""
+              ]
+            },
+            "description": "Authenticate and store JWT tokens in collection variables."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('access_token', json.token);",
+                  "if (json.refresh) pm.collectionVariables.set('refresh_token', json.refresh);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cart and Checkout",
+      "item": [
+        {
+          "name": "1. Checkout Preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"id\": 1,\n      \"name\": \"Wireless Headphones\",\n      \"price\": 129.99,\n      \"qty\": 1\n    },\n    {\n      \"id\": 4,\n      \"name\": \"Gaming Mouse\",\n      \"price\": 49.50,\n      \"qty\": 2\n    }\n  ],\n  \"promoCode\": \"SAVE10\",\n  \"bonusToSpend\": 5.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/checkout-preview/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "checkout-preview",
+                ""
+              ]
+            },
+            "description": "Preview totals for the current cart snapshot. This is the API part of cart checkout."
+          }
+        },
+        {
+          "name": "2. Create Order from Cart Snapshot",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Postman User\",\n  \"customerAddress\": \"Almaty, Dormitory 1\",\n  \"customerPhone\": \"+77011234567\",\n  \"items\": [\n    {\n      \"id\": 1,\n      \"name\": \"Wireless Headphones\",\n      \"price\": 129.99,\n      \"qty\": 1\n    },\n    {\n      \"id\": 4,\n      \"name\": \"Gaming Mouse\",\n      \"price\": 49.50,\n      \"qty\": 2\n    }\n  ],\n  \"promoCode\": \"SAVE10\",\n  \"bonusToSpend\": 5.00,\n  \"total\": 201.09\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                ""
+              ]
+            },
+            "description": "Create an order from the frontend cart snapshot."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('last_order_id', String(json.id));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Orders History",
+      "item": [
+        {
+          "name": "1. Get My Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                ""
+              ]
+            },
+            "description": "Return authenticated user's order history."
+          }
+        },
+        {
+          "name": "2. Orders Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/summary/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "summary",
+                ""
+              ]
+            },
+            "description": "Return compact history summary for the authenticated user."
+          }
+        },
+        {
+          "name": "3. Cancel Last Created Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{last_order_id}}/cancel/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{last_order_id}}",
+                "cancel",
+                ""
+              ]
+            },
+            "description": "Cancel the latest created order if its status is still new."
+          }
+        }
+      ]
+    }
+  ]
+}

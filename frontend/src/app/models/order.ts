@@ -10,6 +10,7 @@ export type OrderStatus = 'new' | 'paid' | 'shipped' | 'delivered' | 'cancelled'
 export interface CheckoutSummary {
   subtotal: number;
   discountAmount: number;
+  spentBonus: number;
   total: number;
   earnedBonus: number;
 }
@@ -28,10 +29,12 @@ export interface Order {
 
   // Промокод можно не передавать, если пользователь его не ввёл.
   promoCode?: string;
+  bonusToSpend?: number;
 
   // Эти поля чаще всего приходят уже после backend-расчёта.
   subtotal?: number;
   discountAmount?: number;
+  spentBonus?: number;
   earnedBonus?: number;
 
   total: number;

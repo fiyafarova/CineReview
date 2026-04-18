@@ -28,7 +28,7 @@ export class OrderService {
   // Предпросмотр checkout.
   // Этот endpoint должен считать скидку, итоговую сумму и бонусы на backend.
   // Пока frontend уже умеет его вызывать, а backend мы подключим следующим этапом.
-  previewCheckout(payload: { items: CartItem[]; promoCode?: string }): Observable<CheckoutSummary> {
+  previewCheckout(payload: { items: CartItem[]; promoCode?: string, bonusToSpend?: number; }): Observable<CheckoutSummary> {
     return this.http.post<CheckoutSummary>(`${this.apiUrl}checkout-preview/`, payload);
   }
 

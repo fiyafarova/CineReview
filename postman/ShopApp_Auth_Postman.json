@@ -1,7 +1,8 @@
 {
   "info": {
-    "name": "Auth API (Sofiya)",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "name": "ShopEasy API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for ShopEasy auth, cart/checkout, and order history endpoints."
   },
   "variable": [
     {
@@ -18,166 +19,511 @@
       "key": "refresh_token",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "last_order_id",
+      "value": "1",
+      "type": "string"
     }
   ],
   "item": [
     {
-      "name": "1. Register",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"name\": \"Sofia\",\n  \"email\": \"sofia@mail.com\",\n  \"password\": \"123456\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/api/auth/register/",
-          "host": ["{{base_url}}"],
-          "path": ["api", "auth", "register", ""]
-        },
-        "description": "Creates a new user. Returns JWT tokens and user data."
-      },
-      "event": [
+      "name": "Auth",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "const json = pm.response.json();",
-              "if (json.token) {",
-              "    pm.collectionVariables.set('access_token', json.token);",
-              "    pm.collectionVariables.set('refresh_token', json.refresh);",
-              "    console.log('Tokens saved automatically');",
-              "}"
-            ]
-          }
-        }
-      ],
-      "response": [
-        {
-          "name": "201 Created — successful registration",
-          "status": "Created",
-          "code": 201,
-          "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Sofia\",\n    \"email\": \"sofia@mail.com\"\n  }\n}"
+          "name": "1. Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"sofiya\",\n  \"email\": \"sofiya@example.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                ""
+              ]
+            },
+            "description": "Creates a new user and returns JWT tokens."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('access_token', json.token);",
+                  "if (json.refresh) pm.collectionVariables.set('refresh_token', json.refresh);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"token\": \"eyJ...\",\n  \"refresh\": \"eyJ...\",\n  \"user\": {\n    \"id\": 7,\n    \"name\": \"sofiya\",\n    \"email\": \"sofiya@example.com\",\n    \"bonusBalance\": 0.0\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": {\n    \"email\": [\"A user with this email already exists.\"]\n  }\n}"
+            }
+          ]
         },
         {
-          "name": "400 Bad Request — email already taken",
-          "status": "Bad Request",
-          "code": 400,
-          "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"message\": {\n    \"email\": [\"A user with this email already exists.\"]\n  }\n}"
+          "name": "2. Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sofiya@example.com\",\n  \"password\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login",
+                ""
+              ]
+            },
+            "description": "Authenticates the user and stores JWT tokens in collection variables."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.token) pm.collectionVariables.set('access_token', json.token);",
+                  "if (json.refresh) pm.collectionVariables.set('refresh_token', json.refresh);"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"token\": \"eyJ...\",\n  \"refresh\": \"eyJ...\",\n  \"user\": {\n    \"id\": 7,\n    \"name\": \"sofiya\",\n    \"email\": \"sofiya@example.com\",\n    \"bonusBalance\": 0.0\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": {\n    \"non_field_errors\": [\"Invalid email or password.\"]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "3. Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout",
+                ""
+              ]
+            },
+            "description": "Logs out the current user."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Logged out successfully.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "4. Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me",
+                ""
+              ]
+            },
+            "description": "Returns the currently authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"user\": {\n    \"id\": 7,\n    \"name\": \"sofiya\",\n    \"email\": \"sofiya@example.com\",\n    \"bonusBalance\": 15.25\n  }\n}"
+            }
+          ]
         }
       ]
     },
     {
-      "name": "2. Login",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"sofia@mail.com\",\n  \"password\": \"123456\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/api/auth/login/",
-          "host": ["{{base_url}}"],
-          "path": ["api", "auth", "login", ""]
-        },
-        "description": "Authenticates a user by email and password. Returns a JWT token."
-      },
-      "event": [
+      "name": "Cart and Checkout",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "const json = pm.response.json();",
-              "if (json.token) {",
-              "    pm.collectionVariables.set('access_token', json.token);",
-              "    pm.collectionVariables.set('refresh_token', json.refresh);",
-              "    console.log('Tokens saved automatically');",
-              "}"
-            ]
-          }
-        }
-      ],
-      "response": [
-        {
-          "name": "200 OK — successful login",
-          "status": "OK",
-          "code": 200,
-          "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"refresh\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Sofia\",\n    \"email\": \"sofia@mail.com\"\n  }\n}"
+          "name": "1. Checkout Preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"id\": 1,\n      \"name\": \"Wireless Headphones\",\n      \"price\": 129.99,\n      \"qty\": 1\n    },\n    {\n      \"id\": 4,\n      \"name\": \"Gaming Mouse\",\n      \"price\": 49.50,\n      \"qty\": 2\n    }\n  ],\n  \"promoCode\": \"SAVE10\",\n  \"bonusToSpend\": 5.00\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/checkout-preview/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "checkout-preview",
+                ""
+              ]
+            },
+            "description": "Backend preview for cart totals. The cart itself is stored in frontend localStorage, so Postman covers the checkout API endpoint."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"promoCode\": \"SAVE10\",\n  \"subtotal\": \"228.99\",\n  \"discountAmount\": \"22.90\",\n  \"spentBonus\": \"5.00\",\n  \"total\": \"201.09\",\n  \"earnedBonus\": \"2.01\"\n}"
+            },
+            {
+              "name": "400 Bad Request",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"promoCode\": [\"Promo code does not exist.\"]\n}"
+            }
+          ]
         },
         {
-          "name": "400 Bad Request — wrong password",
-          "status": "Bad Request",
-          "code": 400,
-          "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"message\": {\n    \"non_field_errors\": [\"Invalid email or password.\"]\n  }\n}"
+          "name": "2. Create Order from Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerName\": \"Sofiya Safarova\",\n  \"customerAddress\": \"KBTU Dormitory, Room 305\",\n  \"customerPhone\": \"+77011234567\",\n  \"items\": [\n    {\n      \"id\": 1,\n      \"name\": \"Wireless Headphones\",\n      \"price\": 129.99,\n      \"qty\": 1\n    },\n    {\n      \"id\": 4,\n      \"name\": \"Gaming Mouse\",\n      \"price\": 49.50,\n      \"qty\": 2\n    }\n  ],\n  \"promoCode\": \"SAVE10\",\n  \"bonusToSpend\": 5.00,\n  \"total\": 201.09\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                ""
+              ]
+            },
+            "description": "Creates an order using the current cart snapshot."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.collectionVariables.set('last_order_id', String(json.id));"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 12,\n  \"customerName\": \"Sofiya Safarova\",\n  \"customerAddress\": \"KBTU Dormitory, Room 305\",\n  \"customerPhone\": \"+77011234567\",\n  \"items\": [\n    {\n      \"id\": 1,\n      \"name\": \"Wireless Headphones\",\n      \"price\": 129.99,\n      \"qty\": 1\n    },\n    {\n      \"id\": 4,\n      \"name\": \"Gaming Mouse\",\n      \"price\": 49.5,\n      \"qty\": 2\n    }\n  ],\n  \"status\": \"new\",\n  \"promoCode\": \"SAVE10\",\n  \"subtotal\": \"228.99\",\n  \"discountAmount\": \"22.90\",\n  \"spentBonus\": \"5.00\",\n  \"earnedBonus\": \"2.01\",\n  \"total\": \"201.09\",\n  \"createdAt\": \"2026-04-18T15:30:00Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"total\": [\"Total does not match backend calculation.\"]\n}"
+            }
+          ]
         }
       ]
     },
     {
-      "name": "3. Logout",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{access_token}}" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/api/auth/logout/",
-          "host": ["{{base_url}}"],
-          "path": ["api", "auth", "logout", ""]
-        },
-        "description": "Invalidates the refresh token. Requires Authorization: Bearer <access_token>."
-      },
-      "response": [
+      "name": "Orders History",
+      "item": [
         {
-          "name": "200 OK — successful logout",
-          "status": "OK",
-          "code": 200,
-          "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"message\": \"Logged out successfully.\"\n}"
+          "name": "1. Get My Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                ""
+              ]
+            },
+            "description": "Returns order history of the authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": 12,\n    \"customerName\": \"Sofiya Safarova\",\n    \"customerAddress\": \"KBTU Dormitory, Room 305\",\n    \"customerPhone\": \"+77011234567\",\n    \"items\": [\n      {\n        \"id\": 1,\n        \"name\": \"Wireless Headphones\",\n        \"price\": 129.99,\n        \"qty\": 1\n      }\n    ],\n    \"status\": \"new\",\n    \"promoCode\": \"SAVE10\",\n    \"subtotal\": \"129.99\",\n    \"discountAmount\": \"13.00\",\n    \"spentBonus\": \"5.00\",\n    \"earnedBonus\": \"1.12\",\n    \"total\": \"111.99\",\n    \"createdAt\": \"2026-04-18T15:30:00Z\"\n  }\n]"
+            }
+          ]
         },
         {
-          "name": "401 Unauthorized — no token provided",
-          "status": "Unauthorized",
-          "code": 401,
-          "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"detail\": \"Authentication credentials were not provided.\"\n}"
-        }
-      ]
-    },
-    {
-      "name": "4. Current User (GET /me/)",
-      "request": {
-        "method": "GET",
-        "header": [
-          { "key": "Authorization", "value": "Bearer {{access_token}}" }
-        ],
-        "url": {
-          "raw": "{{base_url}}/api/auth/me/",
-          "host": ["{{base_url}}"],
-          "path": ["api", "auth", "me", ""]
+          "name": "2. Orders Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/orders/summary/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "summary",
+                ""
+              ]
+            },
+            "description": "Returns a compact summary for order history."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"ordersCount\": 3,\n  \"totalSpent\": 459.97\n}"
+            }
+          ]
         },
-        "description": "Returns the data of the currently authenticated user. Requires a valid token."
-      },
-      "response": [
         {
-          "name": "200 OK",
-          "status": "OK",
-          "code": 200,
-          "header": [{ "key": "Content-Type", "value": "application/json" }],
-          "body": "{\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"Sofia\",\n    \"email\": \"sofia@mail.com\"\n  }\n}"
+          "name": "3. Cancel Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders/{{last_order_id}}/cancel/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "orders",
+                "{{last_order_id}}",
+                "cancel",
+                ""
+              ]
+            },
+            "description": "Cancels the latest created order if its status is still new."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": 12,\n  \"customerName\": \"Sofiya Safarova\",\n  \"customerAddress\": \"KBTU Dormitory, Room 305\",\n  \"customerPhone\": \"+77011234567\",\n  \"items\": [\n    {\n      \"id\": 1,\n      \"name\": \"Wireless Headphones\",\n      \"price\": 129.99,\n      \"qty\": 1\n    }\n  ],\n  \"status\": \"cancelled\",\n  \"promoCode\": \"SAVE10\",\n  \"subtotal\": \"129.99\",\n  \"discountAmount\": \"13.00\",\n  \"spentBonus\": \"5.00\",\n  \"earnedBonus\": \"1.12\",\n  \"total\": \"111.99\",\n  \"createdAt\": \"2026-04-18T15:30:00Z\"\n}"
+            },
+            {
+              "name": "400 Bad Request",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Only orders with status \\\"new\\\" can be cancelled.\"\n}"
+            }
+          ]
         }
       ]
     }

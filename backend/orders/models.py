@@ -59,7 +59,7 @@ class Order(models.Model):
 
     # earnedBonus = сколько бонусов начислили за этот заказ
     earnedBonus = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-
+    spentBonus = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     # Флаг нужен, чтобы понимать: бонус уже добавлен пользователю или нет.
     # Это помогает корректно откатывать его при отмене заказа.
     bonusAwarded = models.BooleanField(default=False)

@@ -7,54 +7,92 @@ from users.models import UserProfile
 from .models import Order, PromoCode
 
 
-def calculate_checkout(items, promo_code=''):
+def calculate_checkout(items, promo_code='', user=None, bonus_to_spend=Decimal('0.00')):
     """
-    Единая функция расчёта checkout.
-    Используется и в preview, и при реальном создании заказа.
+    Единый backend-расчет checkout.
 
-    Почему это важно:
-    - не дублируем логику скидки в нескольких местах
-    - backend всегда остаётся источником истины по total/bonus
+    Здесь backend сам считает:
+    - subtotal
+    - скидку по промокоду
+    - сколько бонусов можно списать
+    - итоговую сумму заказа
+    - сколько бонусов будет начислено потом
+
+    Важно:
+    начисление бонусов здесь только рассчитывается,
+    но фактически бонусы падают пользователю позже,
+    когда заказ получает статус delivered.
     """
     subtotal = sum(
-        Decimal(str(item['price'])) * item['qty']
-        for item in items
+        (Decimal(str(item['price'])) * item['qty'] for item in items),
+        Decimal('0.00'),
     ).quantize(Decimal('0.01'))
 
     promo_code = (promo_code or '').strip().upper()
-    discount = Decimal('0.00')
+    discount_amount = Decimal('0.00')
 
     if promo_code:
         promo = PromoCode.objects.filter(code__iexact=promo_code).first()
 
         if not promo:
-            raise ValueError('Такого промокода не существует.')
+            raise serializers.ValidationError({
+                'promoCode': 'Такого промокода не существует.',
+            })
 
         if not promo.is_active:
-            raise ValueError('Этот промокод сейчас не работает.')
+            raise serializers.ValidationError({
+                'promoCode': 'Этот промокод сейчас неактивен.',
+            })
 
-        discount = (
+        discount_amount = (
             subtotal * Decimal(promo.discount_percent) / Decimal('100')
         ).quantize(Decimal('0.01'))
 
-        # Сохраняем код в каноничном виде из базы.
+        # Сохраняем промокод в том виде, как он лежит в базе.
         promo_code = promo.code
 
-    total = (subtotal - discount).quantize(Decimal('0.01'))
+    requested_bonus = Decimal(str(bonus_to_spend or 0)).quantize(Decimal('0.01'))
 
-    # По задаче начисляем 1% бонусами после заказа.
+    if requested_bonus < 0:
+        raise serializers.ValidationError({
+            'bonusToSpend': 'Бонусы не могут быть отрицательными.',
+        })
+
+    available_bonus = Decimal('0.00')
+
+    if user and getattr(user, 'is_authenticated', False):
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+        available_bonus = Decimal(profile.bonusBalance).quantize(Decimal('0.01'))
+
+        if requested_bonus > available_bonus:
+            raise serializers.ValidationError({
+                'bonusToSpend': 'На балансе недостаточно бонусов.',
+            })
+
+    # Нельзя списать бонусов больше, чем остается к оплате после скидки.
+    max_bonus_applicable = max(
+        Decimal('0.00'),
+        (subtotal - discount_amount).quantize(Decimal('0.01')),
+    )
+
+    spent_bonus = min(requested_bonus, max_bonus_applicable).quantize(Decimal('0.01'))
+    total = (subtotal - discount_amount - spent_bonus).quantize(Decimal('0.01'))
+
+    # По задаче бонусы начисляются в размере 1% от итоговой суммы заказа.
     earned_bonus = (total * Decimal('0.01')).quantize(Decimal('0.01'))
 
     return {
         'promoCode': promo_code,
         'subtotal': subtotal,
-        'discountAmount': discount,
+        'discountAmount': discount_amount,
+        'spentBonus': spent_bonus,
         'total': total,
         'earnedBonus': earned_bonus,
     }
 
 
 class CartItemSerializer(serializers.Serializer):
+    # Снимок одного товара из корзины, который попадет в заказ.
     id = serializers.IntegerField()
     name = serializers.CharField(max_length=255)
     price = serializers.FloatField(min_value=0)
@@ -62,9 +100,15 @@ class CartItemSerializer(serializers.Serializer):
 
 
 class CheckoutPreviewSerializer(serializers.Serializer):
-    # Входные данные для preview checkout.
+    # Входные данные для preview checkout до создания заказа.
     items = CartItemSerializer(many=True)
     promoCode = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    bonusToSpend = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        min_value=Decimal('0.00'),
+    )
 
     def validate_items(self, value):
         if not value:
@@ -72,17 +116,16 @@ class CheckoutPreviewSerializer(serializers.Serializer):
         return value
 
     def get_summary(self):
-        """
-        Вызывается из view.
-        Возвращает уже посчитанную backend-сводку для checkout.
-        """
-        try:
-            return calculate_checkout(
-                self.validated_data['items'],
-                self.validated_data.get('promoCode', ''),
-            )
-        except ValueError as exc:
-            raise serializers.ValidationError({'promoCode': str(exc)})
+        # Возвращаем уже готовую backend-сводку для checkout.
+        request = self.context.get('request')
+        user = request.user if request else None
+
+        return calculate_checkout(
+            self.validated_data['items'],
+            self.validated_data.get('promoCode', ''),
+            user=user,
+            bonus_to_spend=self.validated_data.get('bonusToSpend', Decimal('0.00')),
+        )
 
 
 class CheckoutSummarySerializer(serializers.Serializer):
@@ -90,6 +133,7 @@ class CheckoutSummarySerializer(serializers.Serializer):
     promoCode = serializers.CharField(allow_blank=True)
     subtotal = serializers.DecimalField(max_digits=10, decimal_places=2)
     discountAmount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    spentBonus = serializers.DecimalField(max_digits=10, decimal_places=2)
     total = serializers.DecimalField(max_digits=10, decimal_places=2)
     earnedBonus = serializers.DecimalField(max_digits=10, decimal_places=2)
 
@@ -97,16 +141,28 @@ class CheckoutSummarySerializer(serializers.Serializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True)
 
-    # total приходит с frontend, но backend всё равно пересчитывает его сам.
-    # Мы используем присланный total только как контроль согласованности.
-    total = serializers.DecimalField(max_digits=10, decimal_places=2, min_value=Decimal('0.01'))
+    # Frontend присылает total, но backend все равно пересчитывает его сам.
+    # Это нужно, чтобы не доверять расчетам на клиенте.
+    total = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        min_value=Decimal('0.00'),
+    )
 
     promoCode = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    bonusToSpend = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        required=False,
+        write_only=True,
+        min_value=Decimal('0.00'),
+    )
 
-    # Эти поля заполняются backend автоматически.
+    # Эти поля считаются только backend-логикой.
     status = serializers.CharField(read_only=True)
     subtotal = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     discountAmount = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    spentBonus = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     earnedBonus = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
 
     class Meta:
@@ -119,8 +175,10 @@ class OrderSerializer(serializers.ModelSerializer):
             'items',
             'status',
             'promoCode',
+            'bonusToSpend',
             'subtotal',
             'discountAmount',
+            'spentBonus',
             'earnedBonus',
             'total',
             'createdAt',
@@ -130,6 +188,7 @@ class OrderSerializer(serializers.ModelSerializer):
             'status',
             'subtotal',
             'discountAmount',
+            'spentBonus',
             'earnedBonus',
             'createdAt',
         )
@@ -140,31 +199,30 @@ class OrderSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        """
-        Здесь backend:
-        1. проверяет промокод
-        2. пересчитывает subtotal / discount / total / bonus
-        3. сравнивает frontend total с backend total
-        4. кладёт рассчитанные поля в validated_data
-        """
-        try:
-            summary = calculate_checkout(
-                attrs['items'],
-                attrs.get('promoCode', ''),
-            )
-        except ValueError as exc:
-            raise serializers.ValidationError({'promoCode': str(exc)})
+        # Backend заново пересчитывает весь checkout и не доверяет frontend:
+        # промокод, списание бонусов и итоговая сумма должны совпадать
+        # с серверной логикой.
+        request = self.context.get('request')
+        user = request.user if request else None
+
+        summary = calculate_checkout(
+            attrs['items'],
+            attrs.get('promoCode', ''),
+            user=user,
+            bonus_to_spend=attrs.get('bonusToSpend', Decimal('0.00')),
+        )
 
         incoming_total = Decimal(str(attrs['total'])).quantize(Decimal('0.01'))
 
         if summary['total'] != incoming_total:
             raise serializers.ValidationError({
-                'total': 'Total does not match backend checkout calculation.',
+                'total': 'Итоговая сумма не совпадает с расчетом backend.',
             })
 
         attrs['promoCode'] = summary['promoCode']
         attrs['subtotal'] = summary['subtotal']
         attrs['discountAmount'] = summary['discountAmount']
+        attrs['spentBonus'] = summary['spentBonus']
         attrs['earnedBonus'] = summary['earnedBonus']
         attrs['total'] = summary['total']
 
@@ -173,23 +231,31 @@ class OrderSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # JSONField ожидает обычный список словарей.
         validated_data['items'] = [dict(item) for item in validated_data['items']]
+        validated_data.pop('bonusToSpend', None)
 
-        order = Order.objects.create(**validated_data)
+        user = validated_data.get('user')
+        spent_bonus = Decimal(str(validated_data.get('spentBonus', 0))).quantize(Decimal('0.01'))
 
-        # Начисляем бонусы сразу после создания заказа.
-        # Важно делать это на backend, а не на frontend:
-        # клиент не должен сам решать, сколько бонусов ему начислить.
-        if order.user and not order.bonusAwarded and order.earnedBonus > 0:
-            profile, _ = UserProfile.objects.get_or_create(user=order.user)
-            profile.bonusBalance = (profile.bonusBalance + order.earnedBonus).quantize(Decimal('0.01'))
+        # Если пользователь тратит бонусы при оформлении,
+        # списываем их сразу при создании заказа.
+        if user and spent_bonus > 0:
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+            current_balance = Decimal(profile.bonusBalance).quantize(Decimal('0.01'))
+
+            if current_balance < spent_bonus:
+                raise serializers.ValidationError({
+                    'bonusToSpend': 'На балансе недостаточно бонусов.',
+                })
+
+            profile.bonusBalance = (current_balance - spent_bonus).quantize(Decimal('0.01'))
             profile.save(update_fields=['bonusBalance'])
 
-            order.bonusAwarded = True
-            order.save(update_fields=['bonusAwarded'])
-
-        return order
+        # Новые бонусы здесь не начисляем.
+        # Они должны начисляться только после доставки заказа.
+        return Order.objects.create(**validated_data)
 
 
 class OrderSummarySerializer(serializers.Serializer):
+    # Этот serializer оставлен, потому что его сейчас использует summary() во views.py.
     ordersCount = serializers.IntegerField()
     totalSpent = serializers.FloatField()

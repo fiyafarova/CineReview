@@ -41,7 +41,10 @@ class OrderViewSet(
         - итоговую сумму
         - начисленные бонусы
         """
-        input_serializer = CheckoutPreviewSerializer(data=request.data)
+        input_serializer = CheckoutPreviewSerializer(
+            data=request.data,
+            context={'request': request},
+        )
         input_serializer.is_valid(raise_exception=True)
 
         summary = input_serializer.get_summary()
@@ -52,9 +55,14 @@ class OrderViewSet(
     @action(detail=True, methods=['post'], url_path='cancel')
     def cancel(self, request, pk=None):
         """
-        Отмена разрешена только для заказа в статусе new.
-        Если за заказ уже были начислены бонусы, откатываем их назад.
+        Отменять можно только новые заказы.
+
+        При отмене заказа:
+        - возвращаем пользователю бонусы, которые он потратил при оформлении
+        - откатываем уже начисленные бонусы, если заказ ранее успел перейти в delivered
+        - переводим заказ в cancelled
         """
+
         order = self.get_object()
 
         if order.status != OrderStatus.NEW:
@@ -63,17 +71,26 @@ class OrderViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if order.bonusAwarded and order.earnedBonus > 0:
+        if order.user:
             profile, _ = UserProfile.objects.get_or_create(user=order.user)
 
-            # Не даём балансу уйти в минус при откате.
-            profile.bonusBalance = max(
-                Decimal('0.00'),
-                (profile.bonusBalance - order.earnedBonus).quantize(Decimal('0.01')),
-            )
-            profile.save(update_fields=['bonusBalance'])
+            if order.spentBonus > 0:
+                # Возвращаем ранее списанные бонусы, потому что заказ отменяется
+                # и пользователь не должен их терять.
+                profile.bonusBalance = (
+                    profile.bonusBalance + order.spentBonus
+                ).quantize(Decimal('0.01'))
 
-            order.bonusAwarded = False
+            if order.bonusAwarded and order.earnedBonus > 0:
+                # Если за заказ уже были начислены бонусы,
+                # при отмене нужно убрать их обратно из профиля.
+                profile.bonusBalance = max(
+                    Decimal('0.00'),
+                    (profile.bonusBalance - order.earnedBonus).quantize(Decimal('0.01')),
+                )
+                order.bonusAwarded = False
+
+            profile.save(update_fields=['bonusBalance'])
 
         order.status = OrderStatus.CANCELLED
         order.save(update_fields=['status', 'bonusAwarded'])

@@ -1,41 +1,93 @@
-<section class="cart-page">
-  <div class="cart-header">
-    <h1>Cart</h1>
-    <p>Review your items and complete your order</p>
-  </div>
+<section class="container-custom cart-page">
+  <header class="page-header cart-header">
+    <div class="cart-header__content">
+      <span class="cart-kicker">ShopEasy checkout</span>
+      <h1>My cart</h1>
+      <p>Review your selected items, apply a promo code, use bonuses, and complete your order.</p>
+    </div>
 
+    <!-- Показываем количество разных позиций в корзине -->
+    @if (items.length > 0) {
+      <div class="modern-card cart-header__badge">
+        <span>{{ items.length }}</span>
+        <small>{{ items.length === 1 ? 'item' : 'items' }}</small>
+      </div>
+    }
+  </header>
+
+  <!-- Пустое состояние корзины -->
   @if (items.length === 0) {
-    <div class="empty-cart">
-      <p>Your cart is empty</p>
+    <div class="modern-card empty-state cart-empty">
+      <div class="empty-state__icon">Cart</div>
+      <h2>Your cart is empty</h2>
+      <p>Add products from the catalog to see them here.</p>
+      <a class="btn-primary empty-state__action" href="/products">Browse products</a>
     </div>
   } @else {
-    <div class="cart-layout">
-      <div class="cart-items">
+    <div class="cart-grid">
+      <!-- Левая колонка: список товаров -->
+      <div class="cart-list">
         @for (item of items; track item.id) {
-          <article class="cart-card">
-            <div class="cart-card__info">
-              <h3>{{ item.name }}</h3>
-              <p>Price per item: {{ item.price }}</p>
-              <p>Quantity: {{ item.qty }}</p>
-              <p class="subtotal">Subtotal: {{ item.price * item.qty }}</p>
-            </div>
+          <article class="modern-card cart-card">
+            <div class="cart-card__lead">
+              <!-- Простая декоративная "иконка" товара по первой букве -->
+              <div class="cart-card__thumb">
+                {{ item.name.charAt(0) }}
+              </div>
 
-            <div class="cart-card__actions">
-              <button class="qty-btn" (click)="increaseQty(item)">+</button>
-              <button class="qty-btn" (click)="decreaseQty(item)">-</button>
-              <button class="delete-btn" (click)="removeItem(item.id)">Delete</button>
+              <div class="cart-card__content">
+                <div class="cart-card__top">
+                  <div>
+                    <p class="cart-card__eyebrow">Product #{{ item.id }}</p>
+                    <h3>{{ item.name }}</h3>
+                  </div>
+
+                  <button
+                    type="button"
+                    class="btn-danger-light cart-remove"
+                    (click)="removeItem(item.id)"
+                  >
+                    Remove
+                  </button>
+                </div>
+
+                <p class="cart-card__meta">
+                  Price per item
+                  <strong>{{ item.price.toFixed(2) }} $</strong>
+                </p>
+
+                <div class="cart-card__bottom">
+                  <!-- Контрол изменения количества -->
+                  <div class="qty-control">
+                    <button type="button" class="qty-btn" (click)="decreaseQty(item)">-</button>
+                    <span>{{ item.qty }}</span>
+                    <button type="button" class="qty-btn" (click)="increaseQty(item)">+</button>
+                  </div>
+
+                  <!-- Сумма по конкретной позиции -->
+                  <div class="cart-card__total">
+                    <span>Subtotal</span>
+                    <strong>{{ (item.price * item.qty).toFixed(2) }} $</strong>
+                  </div>
+                </div>
+              </div>
             </div>
           </article>
         }
       </div>
 
-      <aside class="checkout-panel">
-        <h2>Checkout</h2>
+      <!-- Правая колонка: checkout -->
+      <aside class="modern-card checkout-card">
+        <div class="checkout-card__header">
+          <p class="checkout-card__eyebrow">Checkout</p>
+          <h2>Order summary</h2>
+        </div>
 
-        <!-- Промокод сразу влияет на backend preview -->
-        <div class="form-group">
-          <label>Promo code</label>
+        <!-- Промокод можно ввести вручную -->
+        <div class="checkout-field">
+          <label for="promoCode">Promo code</label>
           <input
+            id="promoCode"
             type="text"
             [(ngModel)]="promoCode"
             (ngModelChange)="refreshCheckout()"
@@ -43,31 +95,107 @@
           />
         </div>
 
-        @if (promoErrorMessage) {
-          <p class="promo-error">{{ promoErrorMessage }}</p>
+        <!-- Блок управления бонусами:
+             switch выключен -> бонусы не тратим
+             switch включен   -> тратим все доступные бонусы автоматически -->
+        <div class="checkout-bonus">
+          <div class="checkout-bonus__info">
+            <label for="useBonuses">Use bonuses</label>
+            <p>
+              Available:
+              <strong>{{ availableBonus.toFixed(2) }} $</strong>
+            </p>
+          </div>
+
+          <label class="bonus-toggle" for="useBonuses">
+            <input
+              id="useBonuses"
+              type="checkbox"
+              [(ngModel)]="useBonuses"
+              (ngModelChange)="refreshCheckout()"
+            />
+            <span class="bonus-toggle__slider"></span>
+          </label>
+        </div>
+
+        <p class="bonus-hint">
+          If enabled, all available bonuses will be applied automatically.
+        </p>
+
+        <!-- Универсальная ошибка checkout:
+             сюда может прийти и ошибка промокода, и ошибка бонусов -->
+        @if (checkoutErrorMessage) {
+          <div class="alert alert-error promo-alert">{{ checkoutErrorMessage }}</div>
         }
-        <!-- Эти значения теперь должны приезжать из backend preview -->
-        <p>Subtotal: {{ summary.subtotal }}</p>
-        <p>Discount: - {{ summary.discountAmount }}</p>
-        <p class="total">Total: {{ summary.total }}</p>
-        <p>Bonus after order: +{{ summary.earnedBonus }}</p>
 
-        <div class="form-group">
-          <label>Name</label>
-          <input type="text" [(ngModel)]="customerName" placeholder="Enter your name" />
+        <!-- Сводка по заказу -->
+        <div class="summary-rows">
+          <div class="summary-row">
+            <span>Items total</span>
+            <strong>{{ summary.subtotal.toFixed(2) }} $</strong>
+          </div>
+
+          <div class="summary-row">
+            <span>Discount</span>
+            <strong>- {{ summary.discountAmount.toFixed(2) }} $</strong>
+          </div>
+
+          <!-- Показываем, сколько бонусов реально списалось -->
+          <div class="summary-row summary-row--spent">
+            <span>Bonuses used</span>
+            <strong>- {{ summary.spentBonus.toFixed(2) }} $</strong>
+          </div>
+
+          <!-- Важно для новой логики:
+               бонусы не начисляются сразу,
+               а будут начислены только после доставки -->
+          <div class="summary-row summary-row--bonus">
+            <span>Bonus after delivery</span>
+            <strong>+{{ summary.earnedBonus.toFixed(2) }}</strong>
+          </div>
+
+          <div class="summary-row summary-row--total">
+            <span>Total</span>
+            <strong>{{ summary.total.toFixed(2) }} $</strong>
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Address</label>
-          <input type="text" [(ngModel)]="customerAddress" placeholder="Enter your address" />
+        <!-- Данные покупателя -->
+        <div class="checkout-form">
+          <div class="checkout-field">
+            <label for="customerName">Name</label>
+            <input
+              id="customerName"
+              type="text"
+              [(ngModel)]="customerName"
+              placeholder="Enter your name"
+            />
+          </div>
+
+          <div class="checkout-field">
+            <label for="customerAddress">Address</label>
+            <input
+              id="customerAddress"
+              type="text"
+              [(ngModel)]="customerAddress"
+              placeholder="Enter your address"
+            />
+          </div>
+
+          <div class="checkout-field">
+            <label for="customerPhone">Phone</label>
+            <input
+              id="customerPhone"
+              type="text"
+              [(ngModel)]="customerPhone"
+              placeholder="Enter your phone number"
+            />
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Phone</label>
-          <input type="text" [(ngModel)]="customerPhone" placeholder="Enter your phone number" />
-        </div>
-
-        <button class="order-btn" (click)="placeOrder()">Place Order</button>
+        <button class="btn-primary checkout-submit" type="button" (click)="placeOrder()">
+          Place order
+        </button>
       </aside>
     </div>
   }
