@@ -8,7 +8,8 @@ import { CartService } from '../../service/cart.service';
 import { Product } from '../../models/product';
 import { WishlistService } from '../../service/wishlist.service';
 import { AuthService } from '../../service/auth.service';
-import { applyImageFallback } from '../../shared/image-fallback';
+import { applyImageFallback, createProductPlaceholder } from '../../shared/image-fallback';
+import { ToastService } from '../../service/toast.service';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -21,7 +22,6 @@ export class ProductDetailPage implements OnInit {
   product: Product | null = null;
   loading: boolean = true;
   errorMessage: string = '';
-  successMessage: string = '';
   reviewRating: number = 5;
   reviewComment: string = '';
   reviewSubmitting: boolean = false;
@@ -35,6 +35,7 @@ export class ProductDetailPage implements OnInit {
     private cartService: CartService,
     private wishlistService: WishlistService,
     private authService: AuthService,
+    private toastService: ToastService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -103,7 +104,7 @@ export class ProductDetailPage implements OnInit {
         price: this.product.price,
         qty: 1
       });
-      this.successMessage = `${this.product.name} added to cart.`;
+      this.toastService.showSuccess(`${this.product.name} was added to cart.`);
       this.cdr.detectChanges();
     }
   }
@@ -114,14 +115,12 @@ export class ProductDetailPage implements OnInit {
       return;
     }
 
-    this.successMessage = '';
     this.errorMessage = '';
 
     if (this.isWishlisted) {
       this.wishlistService.removeFromWishlist(this.product.id).subscribe({
         next: () => {
           this.isWishlisted = false;
-          this.successMessage = 'Product removed from wishlist.';
           this.cdr.detectChanges();
         },
         error: () => {
@@ -135,13 +134,13 @@ export class ProductDetailPage implements OnInit {
     this.wishlistService.addToWishlist(this.product.id).subscribe({
       next: () => {
         this.isWishlisted = true;
-        this.successMessage = 'Product added to wishlist.';
+        this.toastService.showSuccess('Product was added to wishlist.');
         this.cdr.detectChanges();
       },
       error: (error) => {
         if (error.status === 400) {
           this.isWishlisted = true;
-          this.successMessage = 'Product is already in wishlist.';
+          this.toastService.showSuccess('Product is already in your wishlist.');
         } else {
           this.errorMessage = 'Please login to add products to wishlist.';
         }
@@ -172,7 +171,7 @@ export class ProductDetailPage implements OnInit {
         this.product.rating = totalRating / this.product.reviews.length;
         this.reviewComment = '';
         this.reviewRating = 5;
-        this.successMessage = 'Review added successfully.';
+        this.toastService.showSuccess('Review added successfully.');
         this.reviewSubmitting = false;
         this.cdr.detectChanges();
       },
@@ -202,5 +201,13 @@ export class ProductDetailPage implements OnInit {
 
   onImageError(event: Event): void {
     applyImageFallback(event);
+  }
+
+  getProductFallback(): string {
+    if (!this.product) {
+      return createProductPlaceholder('ShopEasy product');
+    }
+
+    return createProductPlaceholder(this.product.name, this.product.category?.slug, this.product.brand);
   }
 }

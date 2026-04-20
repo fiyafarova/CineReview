@@ -33,4 +33,15 @@
   </nav>
 }
 
+<div class="toast-stack" aria-live="polite" aria-atomic="true">
+  @for (toast of toastService.toasts(); track toast.id) {
+    <div class="toast toast-success">
+      <span>{{ toast.text }}</span>
+      <button type="button" class="toast-close" (click)="toastService.dismiss(toast.id)" aria-label="Dismiss notification">
+        ×
+      </button>
+    </div>
+  }
+</div>
+
 <router-outlet></router-outlet>

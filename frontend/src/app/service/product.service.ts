@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { Category, CreateReviewPayload, Product, ProductFilters, Review } from '../models/product';
+import { resolveImageUrl } from '../shared/image-fallback';
 
 @Injectable({
   providedIn: 'root'
@@ -61,12 +62,16 @@ export class ProductService {
     // Сервер может вернуть числовые поля строками, поэтому приводим их к удобному виду здесь.
     return {
       ...product,
+      image: resolveImageUrl(product.image),
       price: Number(product.price),
       oldPrice: product.oldPrice !== null && product.oldPrice !== undefined ? Number(product.oldPrice) : null,
       rating: Number(product.rating ?? 0),
       stock: Number(product.stock ?? 0),
       reviewCount: Number(product.reviewCount ?? 0),
-      gallery: product.gallery?.map((image) => ({ ...image })),
+      gallery: product.gallery?.map((image) => ({
+        ...image,
+        image_url: resolveImageUrl(image.image_url),
+      })),
       specifications: product.specifications?.map((specification) => ({ ...specification })),
       reviews: product.reviews?.map((review) => ({ ...review, rating: Number(review.rating) }))
     };

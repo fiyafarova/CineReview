@@ -4,7 +4,7 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { WishlistService } from '../../service/wishlist.service';
 import { WishlistItem } from '../../models/profile.model';
-import { applyImageFallback } from '../../shared/image-fallback';
+import { applyImageFallback, createProductPlaceholder, resolveImageUrl } from '../../shared/image-fallback';
 
 @Component({
   selector: 'app-wishlist',
@@ -48,5 +48,13 @@ export class WishlistComponent implements OnInit {
 
   onImageError(event: Event): void {
     applyImageFallback(event);
+  }
+
+  getImageUrl(imageUrl: string | null | undefined): string {
+    return resolveImageUrl(imageUrl);
+  }
+
+  getImageFallback(item: WishlistItem): string {
+    return createProductPlaceholder(item.product_name, item.product_category);
   }
 }

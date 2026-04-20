@@ -8,7 +8,8 @@ import { CartService } from '../../service/cart.service';
 import { Category, Product } from '../../models/product';
 import { WishlistService } from '../../service/wishlist.service';
 import { AuthService } from '../../service/auth.service';
-import { applyImageFallback } from '../../shared/image-fallback';
+import { applyImageFallback, createProductPlaceholder } from '../../shared/image-fallback';
+import { ToastService } from '../../service/toast.service';
 
 @Component({
   selector: 'app-products-page',
@@ -28,7 +29,6 @@ export class ProductsPage implements OnInit {
   onlyOnSale: boolean = false;
   loading: boolean = true;
   errorMessage: string = '';
-  successMessage: string = '';
   wishlistProductIds = new Set<number>();
 
   constructor(
@@ -36,6 +36,7 @@ export class ProductsPage implements OnInit {
     private cartService: CartService,
     private wishlistService: WishlistService,
     private authService: AuthService,
+    private toastService: ToastService,
     private cdr: ChangeDetectorRef,
     private router: Router
   ) {}
@@ -194,20 +195,18 @@ export class ProductsPage implements OnInit {
         price: product.price,
         qty: 1
       });
-      this.successMessage = `${product.name} added to cart.`;
+      this.toastService.showSuccess(`${product.name} was added to cart.`);
     }
   }
 
   toggleWishlist(productId: number): void {
     // Одна кнопка работает и на добавление, и на удаление из избранного.
-    this.successMessage = '';
     this.errorMessage = '';
 
     if (this.wishlistProductIds.has(productId)) {
       this.wishlistService.removeFromWishlist(productId).subscribe({
         next: () => {
           this.wishlistProductIds.delete(productId);
-          this.successMessage = 'Product removed from wishlist.';
           this.cdr.detectChanges();
         },
         error: () => {
@@ -221,13 +220,13 @@ export class ProductsPage implements OnInit {
     this.wishlistService.addToWishlist(productId).subscribe({
       next: () => {
         this.wishlistProductIds.add(productId);
-        this.successMessage = 'Product added to wishlist.';
+        this.toastService.showSuccess('Product was added to wishlist.');
         this.cdr.detectChanges();
       },
       error: (err) => {
         if (err.status === 400) {
           this.wishlistProductIds.add(productId);
-          this.successMessage = 'Product is already in wishlist.';
+          this.toastService.showSuccess('Product is already in your wishlist.');
         } else {
           this.errorMessage = 'Please login to add products to wishlist.';
           console.error(err);
@@ -250,5 +249,13 @@ export class ProductsPage implements OnInit {
 
   onImageError(event: Event): void {
     applyImageFallback(event);
+  }
+
+  getProductImage(product: Product): string {
+    return product.image;
+  }
+
+  getProductFallback(product: Product): string {
+    return createProductPlaceholder(product.name, product.category?.slug, product.brand);
   }
 }

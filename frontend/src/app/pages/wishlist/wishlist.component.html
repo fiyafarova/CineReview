@@ -12,7 +12,7 @@
   @for (item of items; track item.id) {
     <div class="modern-card wishlist-card">
       <a class="wishlist-image" [routerLink]="['/products', item.product_id]">
-        <img [src]="item.product_image" [alt]="item.product_name" (error)="onImageError($event)">
+        <img [src]="getImageUrl(item.product_image)" [attr.data-fallback-src]="getImageFallback(item)" [alt]="item.product_name" (error)="onImageError($event)">
       </a>
 
       <div class="product-info">

@@ -2,10 +2,6 @@
 <section class="container-custom">
   <button class="btn-back" (click)="goBack()">← Back to shopping</button>
 
-  @if (successMessage) {
-    <div class="alert alert-success">{{ successMessage }}</div>
-  }
-
   @if (errorMessage) {
     <div class="alert alert-error">{{ errorMessage }}</div>
   }
@@ -19,7 +15,7 @@
     <div class="product-detail-grid">
       <div class="detail-gallery-column">
         <div class="detail-image-box modern-card">
-          <img [src]="product.image" [alt]="product.name" (error)="onImageError($event)">
+          <img [src]="product.image" [attr.data-fallback-src]="getProductFallback()" [alt]="product.name" (error)="onImageError($event)">
         </div>
       </div>
 

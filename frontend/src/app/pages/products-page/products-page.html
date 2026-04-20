@@ -5,10 +5,6 @@
     <p>Electronics, clothing, books, sports, and home picks in one storefront.</p>
   </header>
 
-  @if (successMessage) {
-    <div class="alert alert-success">{{ successMessage }}</div>
-  }
-
   @if (errorMessage) {
     <div class="alert alert-error">{{ errorMessage }}</div>
   }
@@ -83,12 +79,8 @@
             <span class="product-badge sale">Sale</span>
           }
 
-          @if (product.isNew) {
-            <span class="product-badge fresh">New</span>
-          }
-
           <div class="product-img-wrapper" (click)="viewProduct(product.id)">
-            <img [src]="product.image" [alt]="product.name" loading="lazy" (error)="onImageError($event)">
+            <img [src]="getProductImage(product)" [attr.data-fallback-src]="getProductFallback(product)" [alt]="product.name" loading="lazy" (error)="onImageError($event)">
           </div>
 
           <div class="product-content">
