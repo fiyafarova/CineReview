@@ -1,15 +1,15 @@
 // #st
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ProductService } from '../../service/product.service';
-import { CartService } from '../../service/cart.service';
-import { Product } from '../../models/product';
-import { WishlistService } from '../../service/wishlist.service';
-import { AuthService } from '../../service/auth.service';
-import { applyImageFallback, createProductPlaceholder } from '../../shared/image-fallback';
-import { ToastService } from '../../service/toast.service';
+import {ChangeDetectorRef, Component, OnInit} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {FormsModule} from '@angular/forms';
+import {ActivatedRoute, Router} from '@angular/router';
+import {ProductService} from '../../service/product.service';
+import {CartService} from '../../service/cart.service';
+import {Product} from '../../models/product';
+import {WishlistService} from '../../service/wishlist.service';
+import {AuthService} from '../../service/auth.service';
+import {applyImageFallback, createProductPlaceholder} from '../../shared/image-fallback';
+import {ToastService} from '../../service/toast.service';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -37,7 +37,8 @@ export class ProductDetailPage implements OnInit {
     private authService: AuthService,
     private toastService: ToastService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+  }
 
   ngOnInit(): void {
     // Следим за идентификатором в маршруте, чтобы страница корректно обновлялась при переходах между товарами.
@@ -159,6 +160,10 @@ export class ProductDetailPage implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
   }
 
   submitReview(): void {

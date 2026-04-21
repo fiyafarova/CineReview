@@ -15,7 +15,8 @@
     <div class="product-detail-grid">
       <div class="detail-gallery-column">
         <div class="detail-image-box modern-card">
-          <img [src]="product.image" [attr.data-fallback-src]="getProductFallback()" [alt]="product.name" (error)="onImageError($event)">
+          <img [src]="product.image" [attr.data-fallback-src]="getProductFallback()" [alt]="product.name"
+               (error)="onImageError($event)">
         </div>
       </div>
 
@@ -73,35 +74,40 @@
 
     <!-- Нижний блок страницы товара: форма отзыва и список отзывов покупателей. -->
     <section class="reviews-section">
-      <div class="modern-card review-form-card">
-        <h3>Leave a review</h3>
+      @if (isLoggedIn()) {
+        <div class="modern-card review-form-card">
+          <h3>Leave a review</h3>
 
-        <div class="review-form-grid">
-          <div class="filter-group compact-field">
-            <label>Rating</label>
-            <div class="rating-selector">
-              @for (star of reviewStars; track star) {
-                <button
-                  type="button"
-                  class="star-button"
-                  [class.active]="star <= reviewRating"
-                  (click)="setReviewRating(star)">
-                  ★
-                </button>
-              }
+          <div class="review-form-grid">
+            <div class="filter-group compact-field">
+              <label>Rating</label>
+              <div class="rating-selector">
+                @for (star of reviewStars; track star) {
+                  <button
+                    type="button"
+                    class="star-button"
+                    [class.active]="star <= reviewRating"
+                    (click)="setReviewRating(star)">
+                    ★
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="filter-group review-comment-field">
+              <label>Comment</label>
+              <textarea
+                [(ngModel)]="reviewComment"
+                rows="4"
+                placeholder="Tell us what you liked, what stood out, and how it feels in real use."></textarea>
             </div>
           </div>
 
-          <div class="filter-group review-comment-field">
-            <label>Comment</label>
-            <textarea [(ngModel)]="reviewComment" rows="4" placeholder="Tell us what you liked, what stood out, and how it feels in real use."></textarea>
-          </div>
+          <button class="btn-primary" type="button" (click)="submitReview()" [disabled]="reviewSubmitting">
+            {{ reviewSubmitting ? 'Submitting...' : 'Submit review' }}
+          </button>
         </div>
-
-        <button class="btn-primary" type="button" (click)="submitReview()" [disabled]="reviewSubmitting">
-          {{ reviewSubmitting ? 'Submitting...' : 'Submit review' }}
-        </button>
-      </div>
+      }
 
       <div class="reviews-list">
         <h3>Customer reviews</h3>
@@ -127,6 +133,7 @@
         }
       </div>
     </section>
+
   } @else {
     <div class="modern-card detail-state-card">
       <p>{{ errorMessage || 'Product not found.' }}</p>
