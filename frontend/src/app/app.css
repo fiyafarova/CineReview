@@ -69,8 +69,12 @@
   color: white;
 }
 
+.navbar-user__link{
+  color: #ffffff;
+}
+
 .navbar-user__link:hover {
-  color: var(--primary);
+  color: #3b358a;
   opacity: 0.8;
 }
 
@@ -170,6 +174,7 @@
   .navbar-user {
     width: 100%;
   }
+
 
   .navbar-links {
     flex-wrap: wrap;

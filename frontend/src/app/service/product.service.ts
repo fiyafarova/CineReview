@@ -5,6 +5,13 @@ import { Observable, map } from 'rxjs';
 import { Category, CreateReviewPayload, Product, ProductFilters, Review } from '../models/product';
 import { resolveImageUrl } from '../shared/image-fallback';
 
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -14,33 +21,33 @@ export class ProductService {
 
   constructor(private http: HttpClient) {}
 
-  getAll(filters: ProductFilters = {}): Observable<Product[]> {
-    // Гибко собираем параметры запроса, чтобы один метод покрывал и полный каталог, и фильтрацию.
+  getAll(filters: ProductFilters = {}, page: number = 1): Observable<PaginatedResponse<Product>> {
     const params = new URLSearchParams();
 
-    if (filters.search?.trim()) {
-      params.set('search', filters.search.trim());
-    }
-    if (filters.category) {
-      params.set('category', String(filters.category));
-    }
-    if (filters.minPrice !== null && filters.minPrice !== undefined) {
-      params.set('min_price', String(filters.minPrice));
-    }
-    if (filters.maxPrice !== null && filters.maxPrice !== undefined) {
-      params.set('max_price', String(filters.maxPrice));
-    }
-    if (filters.ordering) {
-      params.set('ordering', filters.ordering);
-    }
-    if (filters.onSale) {
-      params.set('on_sale', 'true');
-    }
+    if (filters.search?.trim()) params.set('search', filters.search.trim());
+    if (filters.category) params.set('category', String(filters.category));
+    if (filters.minPrice !== null && filters.minPrice !== undefined) params.set('min_price', String(filters.minPrice));
+    if (filters.maxPrice !== null && filters.maxPrice !== undefined) params.set('max_price', String(filters.maxPrice));
+    if (filters.ordering) params.set('ordering', filters.ordering);
+    if (filters.onSale) params.set('on_sale', 'true');
+    if (page > 1) params.set('page', String(page));
 
     const suffix = params.toString();
     const url = suffix ? `${this.apiUrl}/?${suffix}` : `${this.apiUrl}/`;
-    // Нормализуем числа сразу после ответа, чтобы шаблоны и сортировки работали стабильно.
-    return this.http.get<Product[]>(url).pipe(map((products) => products.map((product) => this.normalizeProduct(product))));
+
+    return this.http.get<PaginatedResponse<Product> | Product[]>(url).pipe(
+      map((response) => {
+        // Поддерживаем оба формата: массив (без пагинации) и объект DRF
+        const paginated: PaginatedResponse<Product> = Array.isArray(response)
+          ? { count: response.length, next: null, previous: null, results: response }
+          : response;
+
+        return {
+          ...paginated,
+          results: paginated.results.map((product) => this.normalizeProduct(product)),
+        };
+      })
+    );
   }
 
   getById(id: number): Observable<Product> {
@@ -73,7 +80,7 @@ export class ProductService {
         image_url: resolveImageUrl(image.image_url),
       })),
       specifications: product.specifications?.map((specification) => ({ ...specification })),
-      reviews: product.reviews?.map((review) => ({ ...review, rating: Number(review.rating) }))
+      reviews: product.reviews?.map((review) => ({ ...review, rating: Number(review.rating) })),
     };
   }
 }

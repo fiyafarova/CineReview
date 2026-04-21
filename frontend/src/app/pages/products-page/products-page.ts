@@ -18,18 +18,40 @@ import { ToastService } from '../../service/toast.service';
   styleUrl: './products-page.css'
 })
 export class ProductsPage implements OnInit {
-  allProducts: Product[] = [];
   products: Product[] = [];
   categories: Category[] = [];
+
   selectedCategoryId: string = '';
   searchTerm: string = '';
   minPrice: number | null = null;
   maxPrice: number | null = null;
   selectedOrdering: string = 'newest';
   onlyOnSale: boolean = false;
+
   loading: boolean = true;
   errorMessage: string = '';
   wishlistProductIds = new Set<number>();
+
+  // Pagination state
+  currentPage: number = 1;
+  totalCount: number = 0;
+  pageSize: number = 12;
+
+  get totalPages(): number {
+    return Math.ceil(this.totalCount / this.pageSize);
+  }
+
+  get pageNumbers(): number[] {
+    const total = this.totalPages;
+    const current = this.currentPage;
+    const delta = 2;
+    const pages: number[] = [];
+
+    for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
 
   constructor(
     private productService: ProductService,
@@ -48,14 +70,24 @@ export class ProductsPage implements OnInit {
     this.loadWishlist();
   }
 
-  loadProducts(): void {
-    // Берём полный список и локально применяем фильтры, чтобы избежать визуальных скачков в интерфейсе.
+  loadProducts(page: number = 1): void {
     this.loading = true;
     this.errorMessage = '';
-    this.productService.getAll().subscribe({
-      next: (products) => {
-        this.allProducts = products;
-        this.products = this.applyClientGuards(products);
+    this.currentPage = page;
+
+    const filters = {
+      search: this.searchTerm,
+      category: this.selectedCategoryId ? Number(this.selectedCategoryId) : undefined,
+      minPrice: this.minPrice ?? undefined,
+      maxPrice: this.maxPrice ?? undefined,
+      ordering: this.selectedOrdering,
+      onSale: this.onlyOnSale,
+    };
+
+    this.productService.getAll(filters, page).subscribe({
+      next: (response) => {
+        this.products = response.results;
+        this.totalCount = response.count;
         this.loading = false;
         this.cdr.detectChanges();
       },
@@ -68,13 +100,18 @@ export class ProductsPage implements OnInit {
     });
   }
 
+  goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) return;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.loadProducts(page);
+  }
+
   loadWishlist(): void {
     // Избранное подгружаем только для авторизованного пользователя.
     if (!this.authService.isLoggedIn()) {
       this.wishlistProductIds.clear();
       return;
     }
-
     this.wishlistService.getWishlist().subscribe({
       next: (items) => {
         this.wishlistProductIds = new Set(items.map((item) => item.product_id));
@@ -103,7 +140,7 @@ export class ProductsPage implements OnInit {
   applyFilters(): void {
     // Любое изменение фильтра мгновенно пересчитывает видимый список.
     this.normalizePriceFilters();
-    this.products = this.applyClientGuards(this.allProducts);
+    this.loadProducts(1);
   }
 
   resetFilters(): void {
@@ -114,7 +151,7 @@ export class ProductsPage implements OnInit {
     this.maxPrice = null;
     this.selectedOrdering = 'newest';
     this.onlyOnSale = false;
-    this.products = this.applyClientGuards(this.allProducts);
+    this.loadProducts(1);
   }
 
   private applyClientGuards(products: Product[]): Product[] {
@@ -172,13 +209,8 @@ export class ProductsPage implements OnInit {
   }
 
   private normalizePriceFilters(): void {
-    if (this.minPrice !== null) {
-      this.minPrice = Math.max(0, this.minPrice);
-    }
-
-    if (this.maxPrice !== null) {
-      this.maxPrice = Math.max(0, this.maxPrice);
-    }
+    if (this.minPrice !== null) this.minPrice = Math.max(0, this.minPrice);
+    if (this.maxPrice !== null) this.maxPrice = Math.max(0, this.maxPrice);
   }
 
   viewProduct(productId: number): void {
@@ -205,14 +237,8 @@ export class ProductsPage implements OnInit {
 
     if (this.wishlistProductIds.has(productId)) {
       this.wishlistService.removeFromWishlist(productId).subscribe({
-        next: () => {
-          this.wishlistProductIds.delete(productId);
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          this.errorMessage = 'Could not remove product from wishlist.';
-          this.cdr.detectChanges();
-        }
+        next: () => { this.wishlistProductIds.delete(productId); this.cdr.detectChanges(); },
+        error: () => { this.errorMessage = 'Could not remove product from wishlist.'; this.cdr.detectChanges(); }
       });
       return;
     }
@@ -229,10 +255,9 @@ export class ProductsPage implements OnInit {
           this.toastService.showSuccess('Product is already in your wishlist.');
         } else {
           this.errorMessage = 'Please login to add products to wishlist.';
-          console.error(err);
         }
         this.cdr.detectChanges();
-      }
+        }
     });
   }
 

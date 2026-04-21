@@ -1,8 +1,8 @@
-#st
 from django.db.models import Avg, Count, F, Q, Value
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from rest_framework import generics
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
@@ -14,6 +14,12 @@ from .serializers import (
     ReviewCreateSerializer,
     ReviewSerializer,
 )
+
+
+class ProductPagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = 'page_size'
+    max_page_size = 48
 
 
 class CategoryListView(generics.ListAPIView):
@@ -29,6 +35,7 @@ class ProductListView(generics.ListAPIView):
     authentication_classes = []
     serializer_class = ProductListSerializer
     permission_classes = [AllowAny]
+    pagination_class = ProductPagination
 
     def get_queryset(self):
         # Сразу аннотируем рейтинг и число отзывов, чтобы не считать это на клиенте.

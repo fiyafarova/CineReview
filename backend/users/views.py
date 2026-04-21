@@ -72,10 +72,13 @@ def login_view(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_view(request):
-    return Response(
-        {'message': 'Выход выполнен успешно.'},
-        status=status.HTTP_200_OK
-    )
+    try:
+        refresh_token = request.data.get('refresh')
+        token = RefreshToken(refresh_token)
+        token.blacklist()
+    except Exception:
+        pass
+    return Response({'message': 'Выход выполнен успешно.'})
 
 
 @api_view(['GET'])

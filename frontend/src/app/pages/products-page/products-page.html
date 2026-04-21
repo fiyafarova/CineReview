@@ -62,7 +62,10 @@
     </div>
   } @else {
     <div class="results-meta">
-      <p>{{ products.length }} items found</p>
+      <p>{{ totalCount }} items found</p>
+      @if (totalPages > 1) {
+        <p>Page {{ currentPage }} of {{ totalPages }}</p>
+      }
     </div>
   }
 
@@ -71,7 +74,6 @@
       <p>Unfortunately, nothing was found</p>
     </div>
   } @else if (!loading) {
-    <!-- Сетка карточек показывает уже отфильтрованный список товаров. -->
     <div class="products-grid">
       @for (product of products; track product.id) {
         <article class="modern-card product-card">
@@ -125,5 +127,30 @@
         </article>
       }
     </div>
+
+    <!-- Pagination controls -->
+    @if (totalPages > 1) {
+      <nav class="pagination">
+        <button class="page-btn" (click)="goToPage(1)" [disabled]="currentPage === 1" title="First page">«</button>
+        <button class="page-btn" (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 1" title="Previous page">‹</button>
+
+        @if (pageNumbers[0] > 1) {
+          <span class="page-ellipsis">…</span>
+        }
+
+        @for (page of pageNumbers; track page) {
+          <button class="page-btn" [class.active]="page === currentPage" (click)="goToPage(page)">
+            {{ page }}
+          </button>
+        }
+
+        @if (pageNumbers[pageNumbers.length - 1] < totalPages) {
+          <span class="page-ellipsis">…</span>
+        }
+
+        <button class="page-btn" (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages" title="Next page">›</button>
+        <button class="page-btn" (click)="goToPage(totalPages)" [disabled]="currentPage === totalPages" title="Last page">»</button>
+      </nav>
+    }
   }
 </section>
