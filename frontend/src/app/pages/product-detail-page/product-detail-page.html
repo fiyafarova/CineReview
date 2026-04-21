@@ -38,7 +38,7 @@
         </div>
 
         <div class="status-indicator" [class.out-of-stock]="!product.inStock">
-          {{ product.inStock ? ('In stock · ' + product.stock + ' items available') : 'Sold out' }}
+          {{ product.inStock ? 'In stock' : 'Sold out' }}
         </div>
 
         <div class="description-block">
