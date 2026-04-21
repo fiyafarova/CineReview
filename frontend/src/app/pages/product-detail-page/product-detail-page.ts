@@ -97,16 +97,23 @@ export class ProductDetailPage implements OnInit {
 
   addToCart(): void {
     // Кнопка страницы товара добавляет ровно одну позицию в корзину.
-    if (this.product && this.product.inStock) {
-      this.cartService.add({
-        id: this.product.id,
-        name: this.product.name,
-        price: this.product.price,
-        qty: 1
-      });
-      this.toastService.showSuccess(`${this.product.name} was added to cart.`);
-      this.cdr.detectChanges();
+    if (!this.product || !this.product.inStock) {
+      return;
     }
+
+    if (!this.authService.isLoggedIn()) {
+      this.authService.redirectToLogin('/cart');
+      return;
+    }
+
+    this.cartService.add({
+      id: this.product.id,
+      name: this.product.name,
+      price: this.product.price,
+      qty: 1
+    });
+    this.toastService.showSuccess(`${this.product.name} was added to cart.`);
+    this.cdr.detectChanges();
   }
 
   toggleWishlist(): void {
@@ -116,6 +123,11 @@ export class ProductDetailPage implements OnInit {
     }
 
     this.errorMessage = '';
+
+    if (!this.authService.isLoggedIn()) {
+      this.authService.redirectToLogin('/wishlist');
+      return;
+    }
 
     if (this.isWishlisted) {
       this.wishlistService.removeFromWishlist(this.product.id).subscribe({

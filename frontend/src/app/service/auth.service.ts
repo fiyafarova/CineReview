@@ -63,6 +63,12 @@ export class AuthService {
     this.router.navigate(['/products']);
   }
 
+  redirectToLogin(returnUrl?: string): void {
+    this.router.navigate(['/login'], {
+      queryParams: returnUrl ? { returnUrl } : undefined,
+    });
+  }
+
   // После логина/регистрации сохраняем не только токены,
   // но и пользователя целиком, включая bonusBalance.
   private saveSession(res: AuthResponse): void {

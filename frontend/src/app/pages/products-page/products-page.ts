@@ -220,20 +220,32 @@ export class ProductsPage implements OnInit {
 
   addToCart(product: Product): void {
     // Добавляем товар в корзину только если он есть в наличии.
-    if (product.inStock) {
-      this.cartService.add({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        qty: 1
-      });
-      this.toastService.showSuccess(`${product.name} was added to cart.`);
+    if (!product.inStock) {
+      return;
     }
+
+    if (!this.authService.isLoggedIn()) {
+      this.authService.redirectToLogin('/cart');
+      return;
+    }
+
+    this.cartService.add({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      qty: 1
+    });
+    this.toastService.showSuccess(`${product.name} was added to cart.`);
   }
 
   toggleWishlist(productId: number): void {
     // Одна кнопка работает и на добавление, и на удаление из избранного.
     this.errorMessage = '';
+
+    if (!this.authService.isLoggedIn()) {
+      this.authService.redirectToLogin('/wishlist');
+      return;
+    }
 
     if (this.wishlistProductIds.has(productId)) {
       this.wishlistService.removeFromWishlist(productId).subscribe({

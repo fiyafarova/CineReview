@@ -28,6 +28,10 @@ export class CartService {
   }
 
   add(product: CartItem): void {
+    if (!this.authService.isLoggedIn()) {
+      return;
+    }
+
     const items = this.load();
     const existing = items.find(item => item.id === product.id);
 

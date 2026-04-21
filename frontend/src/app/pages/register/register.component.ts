@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../service/auth.service';
 
@@ -120,8 +120,15 @@ export class RegisterComponent {
   isLoading = false;
   errorMessage = '';
   successMessage = '';
+  private returnUrl = '/products';
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/products';
+  }
 
   onSubmit(): void {
     if (this.password !== this.confirmPassword) return;
@@ -131,7 +138,7 @@ export class RegisterComponent {
     this.authService.register({ name: this.name, email: this.email, password: this.password }).subscribe({
       next: () => {
         this.successMessage = 'Account is created!';
-        setTimeout(() => this.router.navigate(['/products']), 1000);
+        setTimeout(() => this.router.navigateByUrl(this.returnUrl), 1000);
       },
       error: (err) => {
         this.isLoading = false;
