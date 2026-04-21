@@ -36,12 +36,12 @@ def calculate_checkout(items, promo_code='', user=None, bonus_to_spend=Decimal('
 
         if not promo:
             raise serializers.ValidationError({
-                'promoCode': 'Такого промокода не существует.',
+                'promoCode': 'This promo code does not exist.',
             })
 
         if not promo.is_active:
             raise serializers.ValidationError({
-                'promoCode': 'Этот промокод сейчас неактивен.',
+                'promoCode': 'This promo code is currently inactive.',
             })
 
         discount_amount = (
@@ -55,7 +55,7 @@ def calculate_checkout(items, promo_code='', user=None, bonus_to_spend=Decimal('
 
     if requested_bonus < 0:
         raise serializers.ValidationError({
-            'bonusToSpend': 'Бонусы не могут быть отрицательными.',
+            'bonusToSpend': 'Bonuses cannot be negative.',
         })
 
     available_bonus = Decimal('0.00')
@@ -66,7 +66,7 @@ def calculate_checkout(items, promo_code='', user=None, bonus_to_spend=Decimal('
 
         if requested_bonus > available_bonus:
             raise serializers.ValidationError({
-                'bonusToSpend': 'На балансе недостаточно бонусов.',
+                'bonusToSpend': 'There are not enough bonuses on the balance.',
             })
 
     # Нельзя списать бонусов больше, чем остается к оплате после скидки.
@@ -112,7 +112,7 @@ class CheckoutPreviewSerializer(serializers.Serializer):
 
     def validate_items(self, value):
         if not value:
-            raise serializers.ValidationError('Корзина не должна быть пустой.')
+            raise serializers.ValidationError('The basket must not be empty.')
         return value
 
     def get_summary(self):
@@ -195,7 +195,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def validate_items(self, value):
         if not value:
-            raise serializers.ValidationError('Корзина не должна быть пустой.')
+            raise serializers.ValidationError('The basket must not be empty.')
         return value
 
     def validate(self, attrs):
@@ -216,7 +216,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
         if summary['total'] != incoming_total:
             raise serializers.ValidationError({
-                'total': 'Итоговая сумма не совпадает с расчетом backend.',
+                'total': 'The final amount does not match the backend calculation.',
             })
 
         attrs['promoCode'] = summary['promoCode']
