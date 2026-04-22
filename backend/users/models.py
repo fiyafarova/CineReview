@@ -20,11 +20,11 @@ class UserProfile(models.Model):
 
 class WishlistItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wishlist')
-    # ВАЖНО: убедись, что приложение 'products' и модель 'Product' существуют
     product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        # Один пользователь не может добавить один товар дважды
         unique_together = ('user', 'product')
 
     def __str__(self):

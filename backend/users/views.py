@@ -5,15 +5,13 @@ from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from .models import UserProfile, WishlistItem
 from .serializers import (
-    LoginSerializer,
-    RegisterSerializer,
-    UserSerializer,
-    ProfileSerializer,
-    WishlistItemSerializer
+    LoginSerializer, RegisterSerializer,
+    UserSerializer, ProfileSerializer, WishlistItemSerializer
 )
 
 
 def get_tokens_for_user(user):
+    #Генерирует пару JWT токенов для пользователя.
     refresh = RefreshToken.for_user(user)
     return {
         'refresh': str(refresh),
@@ -25,6 +23,7 @@ def get_tokens_for_user(user):
 @permission_classes([AllowAny])
 @authentication_classes([])
 def register_view(request):
+
     serializer = RegisterSerializer(data=request.data)
 
     if serializer.is_valid():
@@ -75,19 +74,22 @@ def logout_view(request):
     try:
         refresh_token = request.data.get('refresh')
         token = RefreshToken(refresh_token)
-        token.blacklist()
+        token.blacklist()  # заносим в чёрный список в БД
     except Exception:
-        pass
+        pass  # даже если токен уже неверный — выход всё равно успешен
+
     return Response({'message': 'Выход выполнен успешно.'})
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def me_view(request):
+     # получить данные текущего пользователя.
     return Response(
         {'user': UserSerializer(request.user).data},
         status=status.HTTP_200_OK
     )
+
 
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
@@ -98,33 +100,55 @@ def profile_view(request):
         serializer = ProfileSerializer(profile)
         return Response(serializer.data)
 
+    # partial=True — можно обновить только часть полей
     serializer = ProfileSerializer(profile, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
+
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def wishlist_view(request):
     if request.method == 'GET':
-        # select_related ускоряет запрос, подтягивая данные о товаре сразу
-        items = WishlistItem.objects.filter(user=request.user).select_related('product')
+        # select_related - JOIN в одном SQL запросе
+        items = WishlistItem.objects.filter(
+            user=request.user
+        ).select_related('product')
         return Response(WishlistItemSerializer(items, many=True).data)
 
     product_id = request.data.get('product_id')
     if not product_id:
-        return Response({'detail': 'product_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'detail': 'product_id is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
+    # get_or_create - атомарная операция, не создаст дубликат
     item, created = WishlistItem.objects.get_or_create(
-        user=request.user, product_id=product_id
+        user=request.user,
+        product_id=product_id
     )
+
     if not created:
-        return Response({'detail': 'Already in wishlist'}, status=status.HTTP_400_BAD_REQUEST)
-    return Response(WishlistItemSerializer(item).data, status=status.HTTP_201_CREATED)
+        return Response(
+            {'detail': 'Already in wishlist'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    return Response(
+        WishlistItemSerializer(item).data,
+        status=status.HTTP_201_CREATED
+    )
+
 
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def wishlist_delete_view(request, product_id):
-    WishlistItem.objects.filter(user=request.user, product_id=product_id).delete()
+    WishlistItem.objects.filter(
+        user=request.user,
+        product_id=product_id
+    ).delete()
     return Response(status=status.HTTP_204_NO_CONTENT)

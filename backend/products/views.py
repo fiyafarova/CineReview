@@ -21,7 +21,6 @@ class ProductPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 48
 
-
 class CategoryListView(generics.ListAPIView):
     # Публичный список категорий для фильтра на клиенте.
     authentication_classes = []

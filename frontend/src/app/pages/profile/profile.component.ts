@@ -19,7 +19,7 @@ export class ProfileComponent implements OnInit {
 
   constructor(
     private profileService: ProfileService,
-    private cdr: ChangeDetectorRef  // ← добавь
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -27,7 +27,7 @@ export class ProfileComponent implements OnInit {
       next: (data) => {
         this.profile = data;
         this.isLoading = false;
-        this.cdr.detectChanges();  // ← принудительно обновить view
+        this.cdr.detectChanges();  //  принудительно обновить view
       },
       error: (err) => {
         console.error('Error loading profile', err);
