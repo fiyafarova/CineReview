@@ -8,10 +8,10 @@ from users.models import UserProfile
 
 from .models import Order, OrderStatus
 from .serializers import (
-    CheckoutPreviewSerializer,
-    CheckoutSummarySerializer,
-    OrderSerializer,
-    OrderSummarySerializer,
+        CheckoutPreviewSerializer,
+        CheckoutSummarySerializer,
+        OrderSerializer,
+        OrderSummarySerializer,
 )
 
 

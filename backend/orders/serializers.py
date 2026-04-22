@@ -244,7 +244,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
             if current_balance < spent_bonus:
                 raise serializers.ValidationError({
-                    'bonusToSpend': 'На балансе недостаточно бонусов.',
+                    'bonusToSpend': 'There are not enough bonuses on the balance.',
                 })
 
             profile.bonusBalance = (current_balance - spent_bonus).quantize(Decimal('0.01'))
